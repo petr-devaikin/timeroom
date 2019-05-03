@@ -11,6 +11,15 @@ void ofApp::setup(){
     currentDepthImage.allocate(cameraWidth, cameraHeight);
     pastDepthImage.setUseTexture(false);
     pastDepthImage.allocate(cameraWidth, cameraHeight);
+    
+    maskRGBImage.allocate(cameraWidth, cameraHeight);
+    
+    maskImage.setUseTexture(false);
+    maskImage.allocate(cameraWidth, cameraHeight);
+    
+    mergedImage.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    
+    maskShader.load("shadersGL3/mask");
 }
 
 void ofApp::initCamera() {
@@ -27,6 +36,8 @@ void ofApp::initCamera() {
         
         // depth sensor settings
         depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
+        depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
+        depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
         
         frames = pipe.wait_for_frames();
         cout << "RealSense found!\n";
@@ -70,18 +81,33 @@ void ofApp::updateFrames() {
     // update images to show
     if (frameBuffer.size() > 0) {
         // rgb data
-        memcpy((currentImage.getPixels().getData()), frameBuffer[frameBuffer.size() - 1]->rgbData, 3 * cameraWidth * cameraHeight);
+        memcpy(currentImage.getPixels().getData(), frameBuffer[frameBuffer.size() - 1]->rgbData, 3 * cameraWidth * cameraHeight);
         currentImage.flagImageChanged();
         
-        memcpy((pastImage.getPixels().getData()), frameBuffer[0]->rgbData, 3 * cameraWidth * cameraHeight);
+        memcpy(pastImage.getPixels().getData(), frameBuffer[0]->rgbData, 3 * cameraWidth * cameraHeight);
         pastImage.flagImageChanged();
         
         // depth data
-        memcpy((currentDepthImage.getPixels().getData()), frameBuffer[frameBuffer.size() - 1]->depthData, 2 * cameraWidth * cameraHeight);
-        memcpy((pastDepthImage.getPixels().getData()), frameBuffer[0]->depthData, 2 * cameraWidth * cameraHeight);
+        memcpy(currentDepthImage.getShortPixelsRef().getData(), frameBuffer[frameBuffer.size() - 1]->depthData, 2 * cameraWidth * cameraHeight);
+        memcpy(pastDepthImage.getShortPixelsRef().getData(), frameBuffer[0]->depthData, 2 * cameraWidth * cameraHeight);
         
         // calculate mask for past!
         currentDepthImage -= pastDepthImage;
+        currentDepthImage.convertToRange(0, 255.0 * 65535);
+        maskImage = currentDepthImage;
+        maskImage.threshold(0);
+        maskRGBImage = maskImage;
+        
+        // merge images
+        mergedImage.begin();
+        maskShader.begin();
+        maskShader.setUniformTexture("mask", maskRGBImage.getTexture(), 1);
+        maskShader.setUniformTexture("pastImage", pastImage.getTexture(), 2);
+        
+        currentImage.draw(0, 0);
+        
+        maskShader.end();
+        mergedImage.end();
     }
 }
 
@@ -107,7 +133,13 @@ void ofApp::draw(){
         currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
         
         // frame from the past
-        pastImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+        pastImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
+        
+        // diff mask
+        maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+        
+        // merged
+        mergedImage.draw(cameraWidth / 2, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
     }
 }
 

@@ -239,6 +239,8 @@
 		6F82371C227B30B50087806E /* librealsense2.2.19.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = librealsense2.2.19.0.dylib; sourceTree = "<group>"; };
 		6F82371F227C4B7B0087806E /* rgbdFrame.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = rgbdFrame.cpp; sourceTree = "<group>"; };
 		6F823720227C4B7B0087806E /* rgbdFrame.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rgbdFrame.hpp; sourceTree = "<group>"; };
+		6F823723227C89F40087806E /* mask.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = mask.vert; sourceTree = "<group>"; };
+		6F823724227C89F40087806E /* mask.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = mask.frag; sourceTree = "<group>"; };
 		70046E043EDDB466ED625C3B /* Tracker.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Tracker.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h; sourceTree = SOURCE_ROOT; };
 		7027C12438FC53D4C51FA06F /* cudawarping.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudawarping.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudawarping.hpp; sourceTree = SOURCE_ROOT; };
 		704DCFE42516C774B24026C6 /* utility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = utility.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/utility.hpp; sourceTree = SOURCE_ROOT; };
@@ -1139,6 +1141,16 @@
 			path = h;
 			sourceTree = "<group>";
 		};
+		6F823722227C89F40087806E /* shadersGL3 */ = {
+			isa = PBXGroup;
+			children = (
+				6F823723227C89F40087806E /* mask.vert */,
+				6F823724227C89F40087806E /* mask.frag */,
+			);
+			name = shadersGL3;
+			path = bin/data/shadersGL3;
+			sourceTree = "<group>";
+		};
 		737B033AA777B67BA4F8F4D2 /* opencv */ = {
 			isa = PBXGroup;
 			children = (
@@ -1846,6 +1858,7 @@
 		E4B69B4A0A3A1720003C02F2 = {
 			isa = PBXGroup;
 			children = (
+				6F823722227C89F40087806E /* shadersGL3 */,
 				E4B6FCAD0C3E899E008CF71C /* openFrameworks-Info.plist */,
 				E4EB6923138AFD0F00A09F29 /* Project.xcconfig */,
 				E4B69E1C0A3A1BDC003C02F2 /* src */,

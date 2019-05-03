@@ -19,6 +19,8 @@ private:
     ofxCvShortImage currentDepthImage;
     ofxCvColorImage pastImage;
     ofxCvShortImage pastDepthImage;
+    ofxCvGrayscaleImage maskImage;
+    ofxCvColorImage maskRGBImage;
     
     vector<rgbdFrame*> frameBuffer;
     
@@ -26,7 +28,9 @@ private:
     rs2::hole_filling_filter hole_filter;
     
     rs2::align * align_to_color;
-    rs2::colorizer colorizer;
+    
+    ofShader maskShader;
+    ofFbo mergedImage;
 public:
     void setup();
     void update();
