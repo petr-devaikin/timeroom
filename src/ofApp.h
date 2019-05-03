@@ -9,7 +9,7 @@ class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
-    int maxDelay = 1000;
+    int maxDelay = 10000;
     bool cameraFound;
     
     rs2::pipeline pipe;

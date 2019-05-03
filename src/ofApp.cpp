@@ -83,9 +83,11 @@ void ofApp::updateFrames() {
         // rgb data
         memcpy(currentImage.getPixels().getData(), frameBuffer[frameBuffer.size() - 1]->rgbData, 3 * cameraWidth * cameraHeight);
         currentImage.flagImageChanged();
+        currentImage.updateTexture();
         
         memcpy(pastImage.getPixels().getData(), frameBuffer[0]->rgbData, 3 * cameraWidth * cameraHeight);
         pastImage.flagImageChanged();
+        pastImage.updateTexture();
         
         // depth data
         memcpy(currentDepthImage.getShortPixelsRef().getData(), frameBuffer[frameBuffer.size() - 1]->depthData, 2 * cameraWidth * cameraHeight);
@@ -97,6 +99,8 @@ void ofApp::updateFrames() {
         maskImage = currentDepthImage;
         maskImage.threshold(0);
         maskRGBImage = maskImage;
+        maskRGBImage.flagImageChanged();
+        maskRGBImage.updateTexture();
         
         // merge images
         mergedImage.begin();
@@ -129,17 +133,18 @@ void ofApp::draw(){
     }
     
     if (frameBuffer.size() > 0) {
+        
         // latest frame
-        currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
+        //currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
         
         // frame from the past
-        pastImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
+        //pastImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
         
         // diff mask
-        maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+        //maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
         
         // merged
-        mergedImage.draw(cameraWidth / 2, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+        mergedImage.draw(0, 0);
     }
 }
 
