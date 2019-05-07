@@ -7,20 +7,30 @@
 
 #include "rgbdFrame.hpp"
 
-rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame) {
+rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue) {
     timestamp = videoFrame.get_timestamp();
     width = videoFrame.get_width();
     height = videoFrame.get_height();
     
-    depthData = new unsigned short[width * height];
-    rgbData = new unsigned char[3 * width * height];
+    // allocate images
+    colorImage.setUseTexture(false);
+    colorImage.allocate(depthFrame.get_width(), depthFrame.get_height());
+    
+    depthImage.setUseTexture(false);
+    depthImage.allocate(depthFrame.get_width(), depthFrame.get_height());
+    
+    ofxCvShortImage depthRawImage; // temporal image before scaling
+    depthRawImage.setUseTexture(false);
+    depthRawImage.allocate(depthFrame.get_width(), depthFrame.get_height());
     
     // copy data
-    memcpy(depthData, depthFrame.get_data(), width * height * 2);
-    memcpy(rgbData, videoFrame.get_data(), width * height * 3);
-}
-
-rgbdFrame::~rgbdFrame() {
-    delete [] depthData;
-    delete [] rgbData;
+    memcpy(colorImage.getPixels().getData(), videoFrame.get_data(), width * height * 3);
+    memcpy(depthRawImage.getShortPixelsRef().getData(), depthFrame.get_data(), width * height * 2);
+    
+    colorImage.flagImageChanged();
+    depthRawImage.flagImageChanged();
+    
+    // rescale image
+    depthRawImage.convertToRange(0, 65535. * (65535. / maxDepthValue));
+    depthImage = depthRawImage;
 }

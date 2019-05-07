@@ -9,11 +9,17 @@ class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
+    const float MAX_DISTANCE = 4.;
     int maxDelay = 1000;
-    bool cameraFound;
     
+    // Camera stuff
+    bool initCamera();
+    void updateFrames(); // get new frames from camera if available;
+    bool cameraFound;
+    float cameraDepthScale; // meters per depth 1
     rs2::pipeline pipe;
     rs2::frameset frames;
+    // End of Camera stuff
     
     ofxCvColorImage currentImage;
     ofxCvShortImage currentDepthImage;
@@ -38,7 +44,4 @@ public:
     void exit();
 
     void keyPressed(int key);
-    
-    void initCamera();
-    void updateFrames(); // get new frames from camera if available;
 };

@@ -2,7 +2,10 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    initCamera();
+    if (initCamera()) {
+        frames = pipe.wait_for_frames();
+        align_to_color = new rs2::align(RS2_STREAM_COLOR);
+    }
     
     currentImage.allocate(cameraWidth, cameraHeight);
     pastImage.allocate(cameraWidth, cameraHeight);
@@ -22,7 +25,7 @@ void ofApp::setup(){
     maskShader.load("shadersGL3/mask");
 }
 
-void ofApp::initCamera() {
+bool ofApp::initCamera() {
     cout << "Looking for RealSense\n";
     rs2::config cfg;
     cfg.enable_stream(RS2_STREAM_DEPTH, cameraWidth, cameraHeight);
@@ -39,10 +42,9 @@ void ofApp::initCamera() {
         depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
         depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
         
-        frames = pipe.wait_for_frames();
-        cout << "RealSense found!\n";
+        cameraDepthScale = depth_sensor.get_depth_scale();
         
-        align_to_color = new rs2::align(RS2_STREAM_COLOR);
+        cout << "RealSense found!\n";
         
         cameraFound = true;
         return true;
@@ -69,7 +71,7 @@ void ofApp::updateFrames() {
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         rs2::video_frame rgbFrame = frames.get_color_frame();
-        frameBuffer.push_back(new rgbdFrame(rgbFrame, depthFrame));    // add to the buffer
+        frameBuffer.push_back(new rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale));    // add to the buffer
     }
     
     // !!! change while to faster stuff
@@ -80,19 +82,16 @@ void ofApp::updateFrames() {
     
     // update images to show
     if (frameBuffer.size() > 0) {
-        // rgb data
-        memcpy(currentImage.getPixels().getData(), frameBuffer[frameBuffer.size() - 1]->rgbData, 3 * cameraWidth * cameraHeight);
-        currentImage.flagImageChanged();
-        currentImage.updateTexture();
+        // current pictures
+        currentImage = frameBuffer[frameBuffer.size() - 1]->colorImage;
+        currentDepthImage = frameBuffer[frameBuffer.size() - 1]->depthImage;
         
-        memcpy(pastImage.getPixels().getData(), frameBuffer[0]->rgbData, 3 * cameraWidth * cameraHeight);
-        pastImage.flagImageChanged();
+        // past pictures
+        pastImage = frameBuffer[0]->colorImage;
         pastImage.updateTexture();
+        pastDepthImage = frameBuffer[0]->depthImage;
         
-        // depth data
-        memcpy(currentDepthImage.getShortPixelsRef().getData(), frameBuffer[frameBuffer.size() - 1]->depthData, 2 * cameraWidth * cameraHeight);
-        memcpy(pastDepthImage.getShortPixelsRef().getData(), frameBuffer[0]->depthData, 2 * cameraWidth * cameraHeight);
-        
+        // rewrite part below using shaders
         // calculate mask for past!
         currentDepthImage -= pastDepthImage;
         currentDepthImage.convertToRange(0, 255.0 * 65535);

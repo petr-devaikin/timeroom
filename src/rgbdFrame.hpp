@@ -9,17 +9,17 @@
 #define rgbdFrame_hpp
 
 #include "../librealsense2/rs.hpp"
+#include "ofxOpenCv.h"
 
 class rgbdFrame {
 private:
     int width;
     int height;
 public:
-    rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame);
-    ~rgbdFrame();
+    rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue);
     
-    unsigned short * depthData;
-    unsigned char * rgbData;
+    ofxCvGrayscaleImage depthImage;
+    ofxCvColorImage colorImage;
     double timestamp;
 };
 
