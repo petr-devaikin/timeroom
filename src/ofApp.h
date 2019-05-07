@@ -22,11 +22,9 @@ private:
     // End of Camera stuff
     
     ofxCvColorImage currentImage;
-    ofxCvShortImage currentDepthImage;
+    ofxCvGrayscaleImage currentDepthImage;
     ofxCvColorImage pastImage;
-    ofxCvShortImage pastDepthImage;
-    ofxCvGrayscaleImage maskImage;
-    ofxCvColorImage maskRGBImage;
+    ofxCvGrayscaleImage pastDepthImage;
     
     vector<rgbdFrame*> frameBuffer;
     

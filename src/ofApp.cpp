@@ -10,15 +10,8 @@ void ofApp::setup(){
     currentImage.allocate(cameraWidth, cameraHeight);
     pastImage.allocate(cameraWidth, cameraHeight);
     
-    currentDepthImage.setUseTexture(false);
     currentDepthImage.allocate(cameraWidth, cameraHeight);
-    pastDepthImage.setUseTexture(false);
     pastDepthImage.allocate(cameraWidth, cameraHeight);
-    
-    maskRGBImage.allocate(cameraWidth, cameraHeight);
-    
-    maskImage.setUseTexture(false);
-    maskImage.allocate(cameraWidth, cameraHeight);
     
     mergedImage.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
@@ -85,27 +78,22 @@ void ofApp::updateFrames() {
         // current pictures
         currentImage = frameBuffer[frameBuffer.size() - 1]->colorImage;
         currentDepthImage = frameBuffer[frameBuffer.size() - 1]->depthImage;
+        currentDepthImage.updateTexture();
         
         // past pictures
         pastImage = frameBuffer[0]->colorImage;
         pastImage.updateTexture();
         pastDepthImage = frameBuffer[0]->depthImage;
+        pastDepthImage.updateTexture();
         
-        // rewrite part below using shaders
-        // calculate mask for past!
-        currentDepthImage -= pastDepthImage;
-        currentDepthImage.convertToRange(0, 255.0 * 65535);
-        maskImage = currentDepthImage;
-        maskImage.threshold(0);
-        maskRGBImage = maskImage;
-        maskRGBImage.flagImageChanged();
-        maskRGBImage.updateTexture();
         
         // merge images
         mergedImage.begin();
+        
         maskShader.begin();
-        maskShader.setUniformTexture("mask", maskRGBImage.getTexture(), 1);
-        maskShader.setUniformTexture("pastImage", pastImage.getTexture(), 2);
+        maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
+        maskShader.setUniformTexture("background", pastImage.getTexture(), 2);
+        maskShader.setUniformTexture("backgroundDepth", pastDepthImage.getTexture(), 3);
         
         currentImage.draw(0, 0);
         
