@@ -8,12 +8,15 @@ void ofApp::setup(){
     }
     
     currentImage.allocate(cameraWidth, cameraHeight);
-    pastImage.allocate(cameraWidth, cameraHeight);
-    
     currentDepthImage.allocate(cameraWidth, cameraHeight);
-    pastDepthImage.allocate(cameraWidth, cameraHeight);
+    
+    for (int i = 0; i < REPEAT_NUMBER; i++) {
+        pastImages[i].allocate(cameraWidth, cameraHeight);
+        pastDepthImages[i].allocate(cameraWidth, cameraHeight);
+    }
     
     mergedImage.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     maskShader.load("shadersGL3/mask");
 }
@@ -64,27 +67,40 @@ void ofApp::updateFrames() {
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         rs2::video_frame rgbFrame = frames.get_color_frame();
-        frameBuffer.push_back(new rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale));    // add to the buffer
+        frameBuffer.push_back(rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale));    // add to the buffer
     }
     
-    // !!! change while to faster stuff
-    while (frameBuffer.size() > 0 && frameBuffer[frameBuffer.size() - 1]->timestamp - frameBuffer[0]->timestamp > maxDelay) {
-        delete frameBuffer[0];
-        frameBuffer.erase(frameBuffer.begin());
+    // update delayFrames
+    for (int i = 0; i < REPEAT_NUMBER; i++) {
+        // increase number of frames until the delay is not too big
+        while (delayFrames[i] + 1 < frameBuffer.size() && frameBuffer[frameBuffer.size() - 1].timestamp - frameBuffer[delayFrames[i]].timestamp > delays[i])
+            delayFrames[i] += 1;
+    }
+    
+    // remove not used frames
+    while (delayFrames[REPEAT_NUMBER - 1] > maxNotUsedFrames) {
+        // now remove elements in vector
+        frameBuffer.erase(frameBuffer.begin(), frameBuffer.begin() + maxNotUsedFrames);
+        
+        // adjust frame counters
+        for (int i = 0; i < REPEAT_NUMBER; i++)
+            delayFrames[i] -= maxNotUsedFrames;
     }
     
     // update images to show
     if (frameBuffer.size() > 0) {
         // current pictures
-        currentImage = frameBuffer[frameBuffer.size() - 1]->colorImage;
-        currentDepthImage = frameBuffer[frameBuffer.size() - 1]->depthImage;
+        currentImage = frameBuffer[frameBuffer.size() - 1].colorImage;
+        currentDepthImage = frameBuffer[frameBuffer.size() - 1].depthImage;
         currentDepthImage.updateTexture();
         
         // past pictures
-        pastImage = frameBuffer[0]->colorImage;
-        pastImage.updateTexture();
-        pastDepthImage = frameBuffer[0]->depthImage;
-        pastDepthImage.updateTexture();
+        for (int i = 0; i < REPEAT_NUMBER; i++) {
+            pastImages[i] = frameBuffer[delayFrames[i]].colorImage;
+            pastImages[i].updateTexture();
+            pastDepthImages[i] = frameBuffer[delayFrames[i]].depthImage;
+            pastDepthImages[i].updateTexture();
+        }
         
         
         // merge images
@@ -92,12 +108,16 @@ void ofApp::updateFrames() {
         
         maskShader.begin();
         maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
-        maskShader.setUniformTexture("background", pastImage.getTexture(), 2);
-        maskShader.setUniformTexture("backgroundDepth", pastDepthImage.getTexture(), 3);
+        
+        maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
+        maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
+        maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
+        maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
         
         currentImage.draw(0, 0);
         
         maskShader.end();
+
         mergedImage.end();
     }
 }

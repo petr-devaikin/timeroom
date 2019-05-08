@@ -5,12 +5,17 @@
 #include "ofxOpenCv.h"
 #include "rgbdFrame.hpp"
 
+#define REPEAT_NUMBER 2
+
 class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
     const float MAX_DISTANCE = 4.;
-    int maxDelay = 1000;
+    
+    float delays[REPEAT_NUMBER] = {5000, 10000};
+    int delayFrames[REPEAT_NUMBER] = {0, 0};
+    const int maxNotUsedFrames = 5; // to remove not used frame not one by one
     
     // Camera stuff
     bool initCamera();
@@ -23,10 +28,10 @@ private:
     
     ofxCvColorImage currentImage;
     ofxCvGrayscaleImage currentDepthImage;
-    ofxCvColorImage pastImage;
-    ofxCvGrayscaleImage pastDepthImage;
+    ofxCvColorImage pastImages[REPEAT_NUMBER];
+    ofxCvGrayscaleImage pastDepthImages[REPEAT_NUMBER];
     
-    vector<rgbdFrame*> frameBuffer;
+    vector<rgbdFrame> frameBuffer;
     
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
@@ -35,6 +40,7 @@ private:
     
     ofShader maskShader;
     ofFbo mergedImage;
+    ofFbo tempFbo;
 public:
     void setup();
     void update();
