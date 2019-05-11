@@ -11,7 +11,7 @@ class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
-    const float MAX_DISTANCE = 4.;
+    const float STRIPE_STEP = 0.1; // in meters
     
     float delays[REPEAT_NUMBER] = {5000, 10000};
     int delayFrames[REPEAT_NUMBER] = {0, 0};
@@ -24,23 +24,15 @@ private:
     float cameraDepthScale; // meters per depth 1
     rs2::pipeline pipe;
     rs2::frameset frames;
-    // End of Camera stuff
-    
-    ofxCvColorImage currentImage;
-    ofxCvGrayscaleImage currentDepthImage;
-    ofxCvColorImage pastImages[REPEAT_NUMBER];
-    ofxCvGrayscaleImage pastDepthImages[REPEAT_NUMBER];
-    
-    vector<rgbdFrame> frameBuffer;
     
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
+    // End of Camera stuff
     
-    rs2::align * align_to_color;
-    
-    ofShader maskShader;
-    ofFbo mergedImage;
-    ofFbo tempFbo;
+    ofxCvShortImage currentDepthImage;
+    ofxCvGrayscaleImage currentDepthPreviewImage;
+    ofxCvGrayscaleImage stripedImage;
+    ofxCvColorImage convertedToSaveDepthImage;
 public:
     void setup();
     void update();
@@ -48,4 +40,8 @@ public:
     void exit();
 
     void keyPressed(int key);
+    
+    float maxDistance = 2;
+    float stripeStep = 0.025; // stripe depth in meters
+    float stripeShift = 0; // stripe shift in meters
 };
