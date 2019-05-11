@@ -28,7 +28,7 @@ bool ofApp::initCamera() {
         
         // depth sensor settings
         // !!!! set more precise
-        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
+        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_HIGH_ACCURACY);
         //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
         //depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
         
