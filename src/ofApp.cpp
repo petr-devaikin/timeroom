@@ -19,6 +19,12 @@ void ofApp::setup(){
     tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     maskShader.load("shadersGL3/mask");
+    
+    // setup timer
+    timer = ofGetElapsedTimef();
+    
+    // allocate buffer
+    buffer = new frameBuffer(90 * MAX_BUFFER_LENGTH); // 90 - max fps
 }
 
 bool ofApp::initCamera() {
@@ -37,6 +43,7 @@ bool ofApp::initCamera() {
         depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
         depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
         depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
+        //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE, 0.0f);
         
         cameraDepthScale = depth_sensor.get_depth_scale();
         
@@ -67,65 +74,64 @@ void ofApp::updateFrames() {
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         rs2::video_frame rgbFrame = frames.get_color_frame();
-        frameBuffer.push_back(rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale));    // add to the buffer
-    }
-    
-    // update delayFrames
-    for (int i = 0; i < REPEAT_NUMBER; i++) {
-        // increase number of frames until the delay is not too big
-        while (delayFrames[i] + 1 < frameBuffer.size() && frameBuffer[frameBuffer.size() - 1].timestamp - frameBuffer[delayFrames[i]].timestamp > delays[i])
-            delayFrames[i] += 1;
-    }
-    
-    // remove not used frames
-    while (delayFrames[REPEAT_NUMBER - 1] > maxNotUsedFrames) {
-        // now remove elements in vector
-        frameBuffer.erase(frameBuffer.begin(), frameBuffer.begin() + maxNotUsedFrames);
-        
-        // adjust frame counters
-        for (int i = 0; i < REPEAT_NUMBER; i++)
-            delayFrames[i] -= maxNotUsedFrames;
+        buffer->addFrame(new rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale)); // add to the buffer
     }
     
     // update images to show
-    if (frameBuffer.size() > 0) {
-        // current pictures
-        currentImage = frameBuffer[frameBuffer.size() - 1].colorImage;
-        currentDepthImage = frameBuffer[frameBuffer.size() - 1].depthImage;
-        currentDepthImage.updateTexture();
+    currentImage = buffer->getLatestFrame()->colorImage;
+    currentDepthImage = buffer->getLatestFrame()->colorImage;
+    currentDepthImage.updateTexture();
         
-        // past pictures
-        for (int i = 0; i < REPEAT_NUMBER; i++) {
-            pastImages[i] = frameBuffer[delayFrames[i]].colorImage;
-            pastImages[i].updateTexture();
-            pastDepthImages[i] = frameBuffer[delayFrames[i]].depthImage;
-            pastDepthImages[i].updateTexture();
-        }
-        
-        
-        // merge images
-        mergedImage.begin();
-        
-        maskShader.begin();
-        maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
-        
-        maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
-        maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
-        maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
-        maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
-        
-        currentImage.draw(0, 0);
-        
-        maskShader.end();
-
-        mergedImage.end();
+    // past pictures
+    for (int i = 0; i < REPEAT_NUMBER; i++) {
+        rgbdFrame * frame = buffer->getFrameWithDelay(currentDelays[i]);
+        pastImages[i] = frame->colorImage;
+        pastImages[i].updateTexture();
+        pastDepthImages[i] = frame->depthImage;
+        pastDepthImages[i].updateTexture();
     }
+    
+    // merge images
+    mergedImage.begin();
+    
+    maskShader.begin();
+    maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
+    
+    maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
+    maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
+    maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
+    maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
+    maskShader.setUniformTexture("background2", pastImages[2].getTexture(), 6);
+    maskShader.setUniformTexture("background2Depth", pastDepthImages[2].getTexture(), 7);
+    
+    currentImage.draw(0, 0);
+    
+    maskShader.end();
+
+    mergedImage.end();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     if (!cameraFound) return;
     
+    // update timer
+    float currentTime = ofGetElapsedTimef();
+    float timeDifference = currentTime - timer;
+    timer = currentTime;
+    
+    // subtract delay time
+    if (!makeDelays) {
+        for (int i = 0; i < REPEAT_NUMBER; i++) {
+            if (currentDelays[i] > 0) {
+                currentDelays[i] -= DELAY_SUBTRACTION_SPEED * timeDifference;
+                if (currentDelays[i] < 0) currentDelays[i] = 0;
+            }
+        }
+    }
+    
+    
+    // update frames
     updateFrames();
 }
 
@@ -139,25 +145,19 @@ void ofApp::draw(){
         return;
     }
     
-    if (frameBuffer.size() > 0) {
-        
-        // latest frame
-        //currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
-        
-        // frame from the past
-        //pastImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
-        
-        // diff mask
-        //maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
-        
-        // merged
-        mergedImage.draw(0, 0);
-    }
+    mergedImage.draw(0, 0);
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    if (key == ' ') {
+        makeDelays = !makeDelays;
+        if (makeDelays) {
+            for (int i = 0; i < REPEAT_NUMBER; i++) {
+                currentDelays[i] = desiredDelays[i];
+            }
+        }
+    }
 }
 
 void ofApp::exit(){
@@ -165,4 +165,6 @@ void ofApp::exit(){
         pipe.stop();
         delete align_to_color;
     }
+    
+    delete buffer;
 }

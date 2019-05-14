@@ -22,6 +22,7 @@
 		6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */; };
 		6F82371D227B30B50087806E /* librealsense2.2.19.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F82371C227B30B50087806E /* librealsense2.2.19.0.dylib */; };
 		6F823721227C4B7B0087806E /* rgbdFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F82371F227C4B7B0087806E /* rgbdFrame.cpp */; };
+		6F823727228B4DB20087806E /* frameBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F823725228B4DB20087806E /* frameBuffer.cpp */; };
 		7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */; };
 		837220E80EB56CD44AD27F2A /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F2C6477A769C03A56D1401 /* ofxSlider.cpp */; };
 		852E0891794923EE7583C621 /* ofxInputField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 44B351490B620D04E1E7C52D /* ofxInputField.cpp */; };
@@ -241,6 +242,8 @@
 		6F823720227C4B7B0087806E /* rgbdFrame.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = rgbdFrame.hpp; sourceTree = "<group>"; };
 		6F823723227C89F40087806E /* mask.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = mask.vert; sourceTree = "<group>"; };
 		6F823724227C89F40087806E /* mask.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = mask.frag; sourceTree = "<group>"; };
+		6F823725228B4DB20087806E /* frameBuffer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = frameBuffer.cpp; sourceTree = "<group>"; };
+		6F823726228B4DB20087806E /* frameBuffer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = frameBuffer.hpp; sourceTree = "<group>"; };
 		70046E043EDDB466ED625C3B /* Tracker.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Tracker.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h; sourceTree = SOURCE_ROOT; };
 		7027C12438FC53D4C51FA06F /* cudawarping.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudawarping.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudawarping.hpp; sourceTree = SOURCE_ROOT; };
 		704DCFE42516C774B24026C6 /* utility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = utility.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/utility.hpp; sourceTree = SOURCE_ROOT; };
@@ -1879,6 +1882,8 @@
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
 				6F82371F227C4B7B0087806E /* rgbdFrame.cpp */,
 				6F823720227C4B7B0087806E /* rgbdFrame.hpp */,
+				6F823725228B4DB20087806E /* frameBuffer.cpp */,
+				6F823726228B4DB20087806E /* frameBuffer.hpp */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -2046,6 +2051,7 @@
 				B6840996567E78436F7ECFAB /* ETF.cpp in Sources */,
 				F76B4A79BD8DE4854141CB47 /* fdog.cpp in Sources */,
 				EBCDE831EFAE08274E799C97 /* Calibration.cpp in Sources */,
+				6F823727228B4DB20087806E /* frameBuffer.cpp in Sources */,
 				6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */,
 				45CC483A999BF1065A6B926C /* Distance.cpp in Sources */,
 				5CC34D433F5806179935B89D /* Flow.cpp in Sources */,
