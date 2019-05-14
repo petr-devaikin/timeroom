@@ -120,12 +120,20 @@ void ofApp::update(){
     float timeDifference = currentTime - timer;
     timer = currentTime;
     
-    // subtract delay time
-    if (!makeDelays) {
-        for (int i = 0; i < REPEAT_NUMBER; i++) {
+    // update current delay time
+    for (int i = 0; i < REPEAT_NUMBER; i++) {
+        if (!makeDelays) {
+             // substract to 0
             if (currentDelays[i] > 0) {
                 currentDelays[i] -= DELAY_SUBTRACTION_SPEED * timeDifference;
                 if (currentDelays[i] < 0) currentDelays[i] = 0;
+            }
+        }
+        else {
+            // increase to desired value
+            if (currentDelays[i] < desiredDelays[i]) {
+                currentDelays[i] += DELAY_SUBTRACTION_SPEED * timeDifference;
+                if (currentDelays[i] > desiredDelays[i]) currentDelays[i] = desiredDelays[i];
             }
         }
     }
@@ -152,11 +160,6 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
     if (key == ' ') {
         makeDelays = !makeDelays;
-        if (makeDelays) {
-            for (int i = 0; i < REPEAT_NUMBER; i++) {
-                currentDelays[i] = desiredDelays[i];
-            }
-        }
     }
 }
 
