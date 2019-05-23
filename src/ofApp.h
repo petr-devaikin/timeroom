@@ -38,9 +38,14 @@ private:
     float lastFadeOutTime;
     
     float currentPosition;
+    double cameraMinDepth;
+    double cameraMaxDepth;
     
-    ofxFloatSlider minDepth;
-    ofxFloatSlider maxDepth;
+    float minDepth;
+    float maxDepth;
+    
+    ofxFloatSlider minDepthThreshold;
+    ofxFloatSlider maxDepthThreshold;
     ofxFloatSlider depthStep;
     ofxFloatSlider travelPeriod;
     ofxFloatSlider fadeOutPeriod;

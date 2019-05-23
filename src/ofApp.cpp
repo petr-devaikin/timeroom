@@ -30,10 +30,10 @@ void ofApp::setup(){
     
     // GUI
     gui.setup();
-    gui.add(minDepth.setup("min depth", 1, 1, 8));
-    gui.add(maxDepth.setup("max depth", 4, 1, 8));
+    gui.add(minDepthThreshold.setup("min depth", 1, 1, 8));
+    gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
     gui.add(depthStep.setup("depth step", 0.1, 0.05, 0.5));
-    gui.add(travelPeriod.setup("travel period", 1, 0.1, 5));
+    gui.add(travelPeriod.setup("travel period", 2, 0.1, 5));
     gui.add(fadeOutPeriod.setup("fade out period", 1, 0.1, 5));
     
     currentPosition = minDepth;
@@ -90,7 +90,25 @@ void ofApp::updateFrames() {
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         memcpy(depthImage.getShortPixelsRef().getData(), depthFrame.get_data(), cameraWidth * cameraHeight * 2);
         
-        // scale image
+        // calc range
+        depthImage.setROI(cameraWidth / 8, cameraHeight / 8, cameraWidth * 6 / 8, cameraHeight * 6 / 8);
+        
+        cv::Mat mat = cv::cvarrToMat(depthImage.getCvImage());
+        cv::minMaxLoc(mat, &cameraMinDepth, &cameraMaxDepth);
+        cameraMinDepth *= cameraDepthScale;
+        cameraMaxDepth *= cameraDepthScale;
+        
+        minDepth = cameraMinDepth;
+        if (minDepthThreshold > minDepth) minDepth = minDepthThreshold;
+        maxDepth = cameraMaxDepth;
+        if (maxDepthThreshold < maxDepth) maxDepth = maxDepthThreshold;
+        
+        
+        depthImage.resetROI();
+        //
+        
+        // scale depth of image
+        
         float minDepthPoints = minDepth / cameraDepthScale;
         float maxDepthPoints = maxDepth / cameraDepthScale;
         
@@ -101,6 +119,7 @@ void ofApp::updateFrames() {
         
         // transform to greyscale
         scaledDepthImage = depthImage;
+        
     }
 }
 
@@ -140,8 +159,6 @@ void ofApp::update(){
     float fadeOutValue = (timer - lastFadeOutTime) / periodPerFadeOutBit;
     int fadeOutValueFloor = floor(fadeOutValue);
     
-    cout << fadeOutValue << " " << fadeOutValueFloor << "\n";
-    
     if (fadeOutValueFloor > 0) {
         tempFbo.begin();
         resultFbo.draw(0, 0);
@@ -160,7 +177,7 @@ void ofApp::update(){
     updateFrames();
     
     // update currentPosition;
-    float lastPosition = currentPosition;
+    if (currentPosition > maxDepth) currentPosition = minDepth;
     
     float step = (maxDepth - minDepth) / travelPeriod * timeDiff;
     
