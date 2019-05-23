@@ -6,12 +6,33 @@ void ofApp::setup(){
         frames = pipe.wait_for_frames();
     }
     
-    convertedToSaveDepthImage.allocate(cameraWidth, cameraHeight);
-    currentDepthPreviewImage.allocate(cameraWidth, cameraHeight);
-    stripedImage.allocate(cameraWidth, cameraHeight);
+    // shaders
+    outlineShader.load("shadersGL3/outline");
     
-    currentDepthImage.setUseTexture(false);
-    currentDepthImage.allocate(cameraWidth, cameraHeight);
+    
+    depthImage.setUseTexture(false);
+    depthImage.allocate(cameraWidth, cameraHeight);
+    
+    //scaledDepthImage.setUseTexture(false);
+    scaledDepthImage.allocate(cameraWidth, cameraHeight);
+    
+    processedImage.allocate(cameraWidth, cameraHeight);
+    
+    resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    
+    // GUI
+    gui.setup();
+    gui.add(minDepth.setup("min depth", 1, 1, 8));
+    gui.add(maxDepth.setup("max depth", 4, 1, 8));
+    gui.add(depthStep.setup("depth step", 0.1, 0.05, 0.5));
+    gui.add(travelPeriod.setup("travel period", 1, 0.1, 5));
+    gui.add(fadeOutPeriod.setup("fade out period", 1, 0.1, 5));
+    
+    currentPosition = minDepth;
+    
+    // init timer
+    timer = ofGetElapsedTimef();
 }
 
 bool ofApp::initCamera() {
@@ -28,7 +49,7 @@ bool ofApp::initCamera() {
         
         // depth sensor settings
         // !!!! set more precise
-        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_HIGH_ACCURACY);
+        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
         //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
         //depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
         
@@ -59,29 +80,44 @@ void ofApp::updateFrames() {
         
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
-        memcpy(currentDepthImage.getShortPixelsRef().getData(), depthFrame.get_data(), cameraWidth * cameraHeight * 2);
+        memcpy(depthImage.getShortPixelsRef().getData(), depthFrame.get_data(), cameraWidth * cameraHeight * 2);
         
-        // prepare preview
-        currentDepthPreviewImage = currentDepthImage;
+        // scale image
+        float minDepthPoints = minDepth / cameraDepthScale;
+        float maxDepthPoints = maxDepth / cameraDepthScale;
         
-        // prepare converted to save and striped versions
-        for (int i = 0; i < cameraWidth; i++)
-            for (int j = 0; j < cameraHeight; j++) {
-                float distance = depthFrame.get_distance(i, j);
-                if (distance > maxDistance) distance = maxDistance;
-                if (((int) round((distance - stripeShift) / stripeStep)) % 2)
-                    stripedImage.getPixels().setColor(i, j, ofColor::white);
-                else
-                    stripedImage.getPixels().setColor(i, j, ofColor::black);
-                
-                convertedToSaveDepthImage.getPixels().getData()[3 * (i + j * cameraWidth)] = ((unsigned char * ) depthFrame.get_data())[2 * (i + j * cameraWidth)];
-                convertedToSaveDepthImage.getPixels().getData()[3 * (i + j * cameraWidth) + 1] = ((unsigned char * ) depthFrame.get_data())[2 * (i + j * cameraWidth) + 1];
-                convertedToSaveDepthImage.getPixels().getData()[3 * (i + j * cameraWidth) + 2] = 0;
-            }
+        float newMinPoints = minDepthPoints * 65535. / (maxDepthPoints - minDepthPoints);
+        float newMaxPoints = minDepthPoints + 65535. * 65535. / (maxDepthPoints - minDepthPoints);
         
-        stripedImage.flagImageChanged();
-        convertedToSaveDepthImage.flagImageChanged();
+        depthImage.convertToRange(0, newMaxPoints);
+        
+        // transform to greyscale
+        scaledDepthImage = depthImage;
     }
+}
+
+void ofApp::drawLevel(float depth) {
+    // draw lines at depth level = depth
+    float depthPoints = 255 * (depth - minDepth) / (maxDepth - minDepth);
+    
+    processedImage = scaledDepthImage;
+    processedImage.threshold(depthPoints);
+    
+    tempFbo.begin();
+    resultFbo.draw(0, 0);
+    tempFbo.end();
+    
+    resultFbo.begin();
+    ofClear(0);
+    
+    outlineShader.begin();
+    outlineShader.setUniformTexture("backgroundTex", resultFbo.getTexture(), 1);
+    
+    processedImage.draw(0, 0);
+    
+    outlineShader.end();
+    
+    resultFbo.end();
 }
 
 //--------------------------------------------------------------
@@ -89,6 +125,41 @@ void ofApp::update(){
     if (!cameraFound) return;
     
     updateFrames();
+    
+    // update currentPosition;
+    float lastPosition = currentPosition;
+    float lastTime = timer;
+    
+    timer = ofGetElapsedTimef();
+    
+    float step = (maxDepth - minDepth) / travelPeriod * (timer - lastTime);
+    
+    float newPosition = currentPosition + step;
+    if (newPosition <= maxDepth) {
+        while (currentPosition <= newPosition) {
+            // draw lines at currentPosition
+            drawLevel(currentPosition);
+            
+            currentPosition += step;
+        }
+    }
+    else {
+        while (currentPosition < maxDepth) {
+            // draw lines at currentPosition
+            drawLevel(currentPosition);
+            
+            currentPosition += step;
+        }
+        
+        newPosition -= maxDepth;
+        currentPosition = 0;
+        while (currentPosition < newPosition) {
+            // draw lines at currentPosition
+            drawLevel(currentPosition);
+            
+            currentPosition += step;
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -101,9 +172,9 @@ void ofApp::draw(){
         return;
     }
     
-    //currentDepthPreviewImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
-    stripedImage.draw(0, 0);
-    //convertedToSaveDepthImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+    resultFbo.draw(0, 0);
+    
+    gui.draw();
 }
 
 //--------------------------------------------------------------

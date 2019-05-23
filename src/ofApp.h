@@ -4,18 +4,12 @@
 #include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
 #include "rgbdFrame.hpp"
-
-#define REPEAT_NUMBER 2
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
-    const float STRIPE_STEP = 0.1; // in meters
-    
-    float delays[REPEAT_NUMBER] = {5000, 10000};
-    int delayFrames[REPEAT_NUMBER] = {0, 0};
-    const int maxNotUsedFrames = 5; // to remove not used frame not one by one
     
     // Camera stuff
     bool initCamera();
@@ -29,10 +23,26 @@ private:
     rs2::hole_filling_filter hole_filter;
     // End of Camera stuff
     
-    ofxCvShortImage currentDepthImage;
-    ofxCvGrayscaleImage currentDepthPreviewImage;
-    ofxCvGrayscaleImage stripedImage;
-    ofxCvColorImage convertedToSaveDepthImage;
+    ofxCvShortImage depthImage;
+    ofxCvGrayscaleImage scaledDepthImage;
+    ofxCvGrayscaleImage processedImage;
+    
+    ofShader outlineShader;
+    ofFbo resultFbo;
+    ofFbo tempFbo;
+    
+    void drawLevel(float depth);
+    
+    float timer;
+    
+    float currentPosition;
+    
+    ofxFloatSlider minDepth;
+    ofxFloatSlider maxDepth;
+    ofxFloatSlider depthStep;
+    ofxFloatSlider travelPeriod;
+    ofxFloatSlider fadeOutPeriod;
+    ofxPanel gui;
 public:
     void setup();
     void update();
