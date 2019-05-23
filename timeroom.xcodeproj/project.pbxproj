@@ -243,6 +243,8 @@
 		6F823724227C89F40087806E /* mask.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = mask.frag; sourceTree = "<group>"; };
 		6F823728229705380087806E /* outline.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = outline.vert; sourceTree = "<group>"; };
 		6F823729229705380087806E /* outline.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = outline.frag; sourceTree = "<group>"; };
+		6F82372A229711760087806E /* fadeout.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = fadeout.frag; sourceTree = "<group>"; };
+		6F82372B229711770087806E /* fadeout.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = fadeout.vert; sourceTree = "<group>"; };
 		70046E043EDDB466ED625C3B /* Tracker.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Tracker.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h; sourceTree = SOURCE_ROOT; };
 		7027C12438FC53D4C51FA06F /* cudawarping.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudawarping.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudawarping.hpp; sourceTree = SOURCE_ROOT; };
 		704DCFE42516C774B24026C6 /* utility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = utility.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/utility.hpp; sourceTree = SOURCE_ROOT; };
@@ -1146,6 +1148,8 @@
 		6F823722227C89F40087806E /* shadersGL3 */ = {
 			isa = PBXGroup;
 			children = (
+				6F82372A229711760087806E /* fadeout.frag */,
+				6F82372B229711770087806E /* fadeout.vert */,
 				6F823729229705380087806E /* outline.frag */,
 				6F823728229705380087806E /* outline.vert */,
 				6F823723227C89F40087806E /* mask.vert */,

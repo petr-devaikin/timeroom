@@ -18,10 +18,9 @@ void main()
     vec4 tex0Color = texture(tex0, texCoordVarying).rgba;
     vec4 backgroundColor = texture(backgroundTex, texCoordVarying).rgba;
     
-    if (tex0Color.r != 0)
-        outputColor = vec4(0, 0, 0, 1);
-    else {
-        float result = 0;
+    float result = 0;
+    
+    if (tex0Color.r == 0) {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 if (i == 0 && j == 0) continue;
@@ -35,9 +34,7 @@ void main()
                 }
             }
         }
-        
-        result = max(result, backgroundColor.r);
-        
-        outputColor = vec4(result, result, result, 1);
     }
+    result = max(result, backgroundColor.r);
+    outputColor = vec4(result, result, result, 1);
 }

@@ -28,12 +28,14 @@ private:
     ofxCvGrayscaleImage processedImage;
     
     ofShader outlineShader;
+    ofShader fadeOutShader;
     ofFbo resultFbo;
     ofFbo tempFbo;
     
     void drawLevel(float depth);
     
     float timer;
+    float lastFadeOutTime;
     
     float currentPosition;
     

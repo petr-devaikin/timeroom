@@ -8,6 +8,7 @@ void ofApp::setup(){
     
     // shaders
     outlineShader.load("shadersGL3/outline");
+    fadeOutShader.load("shadersGL3/fadeout");
     
     
     depthImage.setUseTexture(false);
@@ -21,6 +22,12 @@ void ofApp::setup(){
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
+    // clear result
+    
+    resultFbo.begin();
+    ofClear(0);
+    resultFbo.end();
+    
     // GUI
     gui.setup();
     gui.add(minDepth.setup("min depth", 1, 1, 8));
@@ -33,6 +40,7 @@ void ofApp::setup(){
     
     // init timer
     timer = ofGetElapsedTimef();
+    lastFadeOutTime = timer;
 }
 
 bool ofApp::initCamera() {
@@ -89,7 +97,7 @@ void ofApp::updateFrames() {
         float newMinPoints = minDepthPoints * 65535. / (maxDepthPoints - minDepthPoints);
         float newMaxPoints = minDepthPoints + 65535. * 65535. / (maxDepthPoints - minDepthPoints);
         
-        depthImage.convertToRange(0, newMaxPoints);
+        depthImage.convertToRange(-newMinPoints, newMaxPoints);
         
         // transform to greyscale
         scaledDepthImage = depthImage;
@@ -108,7 +116,6 @@ void ofApp::drawLevel(float depth) {
     tempFbo.end();
     
     resultFbo.begin();
-    ofClear(0);
     
     outlineShader.begin();
     outlineShader.setUniformTexture("backgroundTex", resultFbo.getTexture(), 1);
@@ -124,15 +131,38 @@ void ofApp::drawLevel(float depth) {
 void ofApp::update(){
     if (!cameraFound) return;
     
+    float lastTime = timer;
+    timer = ofGetElapsedTimef();
+    float timeDiff = timer - lastTime;
+    
+    // fade out prev pic;
+    float periodPerFadeOutBit = fadeOutPeriod / 255;
+    float fadeOutValue = (timer - lastFadeOutTime) / periodPerFadeOutBit;
+    int fadeOutValueFloor = floor(fadeOutValue);
+    
+    cout << fadeOutValue << " " << fadeOutValueFloor << "\n";
+    
+    if (fadeOutValueFloor > 0) {
+        tempFbo.begin();
+        resultFbo.draw(0, 0);
+        tempFbo.end();
+    
+        resultFbo.begin();
+        fadeOutShader.begin();
+        fadeOutShader.setUniform1f("difference", fadeOutValueFloor / 255.);
+        tempFbo.draw(0, 0);
+        fadeOutShader.end();
+        resultFbo.end();
+        
+        lastFadeOutTime += fadeOutValueFloor * periodPerFadeOutBit;
+    }
+    
     updateFrames();
     
     // update currentPosition;
     float lastPosition = currentPosition;
-    float lastTime = timer;
     
-    timer = ofGetElapsedTimef();
-    
-    float step = (maxDepth - minDepth) / travelPeriod * (timer - lastTime);
+    float step = (maxDepth - minDepth) / travelPeriod * timeDiff;
     
     float newPosition = currentPosition + step;
     if (newPosition <= maxDepth) {
@@ -151,8 +181,8 @@ void ofApp::update(){
             currentPosition += step;
         }
         
-        newPosition -= maxDepth;
-        currentPosition = 0;
+        newPosition = newPosition - maxDepth + minDepth;
+        currentPosition = minDepth;
         while (currentPosition < newPosition) {
             // draw lines at currentPosition
             drawLevel(currentPosition);
