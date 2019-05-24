@@ -17,7 +17,8 @@ void ofApp::setup(){
     //scaledDepthImage.setUseTexture(false);
     scaledDepthImage.allocate(cameraWidth, cameraHeight);
     
-    processedImage.allocate(cameraWidth, cameraHeight);
+    tempImage1.allocate(cameraWidth, cameraHeight);
+    tempImage2.allocate(cameraWidth, cameraHeight);
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
@@ -34,14 +35,6 @@ void ofApp::setup(){
     gui.add(minDepthThreshold.setup("min depth", 1, 1, 8));
     gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
     gui.add(depthStep.setup("depth step", 0.1, 0.05, 0.5));
-    gui.add(travelPeriod.setup("travel period", 2, 0.1, 5));
-    gui.add(fadeOutPeriod.setup("fade out period", 1, 0.1, 5));
-    
-    currentPosition = minDepth;
-    
-    // init timer
-    timer = ofGetElapsedTimef();
-    lastFadeOutTime = timer;
 }
 
 bool ofApp::initCamera() {
@@ -94,24 +87,14 @@ void ofApp::updateFrames() {
         // calc range
         depthImage.setROI(cameraWidth / 8, cameraHeight / 8, cameraWidth * 6 / 8, cameraHeight * 6 / 8);
         
-        cv::Mat mat = cv::cvarrToMat(depthImage.getCvImage());
-        cv::minMaxLoc(mat, &cameraMinDepth, &cameraMaxDepth);
-        cameraMinDepth *= cameraDepthScale;
-        cameraMaxDepth *= cameraDepthScale;
-        
-        minDepth = cameraMinDepth;
-        if (minDepthThreshold > minDepth) minDepth = minDepthThreshold;
-        maxDepth = cameraMaxDepth;
-        if (maxDepthThreshold < maxDepth) maxDepth = maxDepthThreshold;
-        
         
         depthImage.resetROI();
         //
         
         // scale depth of image
         
-        float minDepthPoints = minDepth / cameraDepthScale;
-        float maxDepthPoints = maxDepth / cameraDepthScale;
+        float minDepthPoints = minDepthThreshold / cameraDepthScale;
+        float maxDepthPoints = maxDepthThreshold / cameraDepthScale;
         
         float newMinPoints = minDepthPoints * 65535. / (maxDepthPoints - minDepthPoints);
         float newMaxPoints = minDepthPoints + 65535. * 65535. / (maxDepthPoints - minDepthPoints);
@@ -124,21 +107,28 @@ void ofApp::updateFrames() {
     }
 }
 
-void ofApp::makeSlice(float depth) {
-    float depthPoints = 255 * (depth - minDepth) / (maxDepth - minDepth);
+void ofApp::makeSlice(float minDepth, float maxDepth) {
+    float maxDepthPoints = 255 * (maxDepth - minDepthThreshold) / (maxDepthThreshold - minDepthThreshold);
+    float minDepthPoints = 255 * (minDepth - minDepthThreshold) / (maxDepthThreshold - minDepthThreshold);
     
-    processedImage = scaledDepthImage;
-    processedImage.threshold(depthPoints);
+    tempImage1 = scaledDepthImage;
+    tempImage1.threshold(maxDepthPoints);
+    tempImage2 = scaledDepthImage;
+    tempImage2.threshold(minDepthPoints);
+    
+    tempImage1 -= tempImage2;
     
     sliceFbo.begin();
     ofClear(0);
-    processedImage.draw(0, 0);
+    outlineShader.begin();
+    tempImage1.draw(0, 0);
+    outlineShader.end();
     sliceFbo.end();
 }
 
-void ofApp::drawLevel(float depth) {
+void ofApp::drawLevel(float minDepth, float maxDepth) {
     // draw lines at depth level = depth
-    makeSlice(depth);
+    makeSlice(minDepth, maxDepth);
     
     tempFbo.begin();
     resultFbo.draw(0, 0);
@@ -146,12 +136,9 @@ void ofApp::drawLevel(float depth) {
     
     resultFbo.begin();
     
-    outlineShader.begin();
-    outlineShader.setUniformTexture("backgroundTex", resultFbo.getTexture(), 1);
+    of
     
     sliceFbo.draw(0, 0);
-    
-    outlineShader.end();
     
     resultFbo.end();
 }
@@ -160,62 +147,19 @@ void ofApp::drawLevel(float depth) {
 void ofApp::update(){
     if (!cameraFound) return;
     
-    float lastTime = timer;
-    timer = ofGetElapsedTimef();
-    float timeDiff = timer - lastTime;
-    
-    // fade out prev pic;
-    float periodPerFadeOutBit = fadeOutPeriod / 255;
-    float fadeOutValue = (timer - lastFadeOutTime) / periodPerFadeOutBit;
-    int fadeOutValueFloor = floor(fadeOutValue);
-    
-    if (fadeOutValueFloor > 0) {
-        tempFbo.begin();
-        resultFbo.draw(0, 0);
-        tempFbo.end();
-    
-        resultFbo.begin();
-        fadeOutShader.begin();
-        fadeOutShader.setUniform1f("difference", fadeOutValueFloor / 255.);
-        tempFbo.draw(0, 0);
-        fadeOutShader.end();
-        resultFbo.end();
-        
-        lastFadeOutTime += fadeOutValueFloor * periodPerFadeOutBit;
-    }
-    
     updateFrames();
     
+    // clean image
+    resultFbo.begin();
+    ofClear(0);
+    resultFbo.end();
+    
     // update currentPosition;
-    if (currentPosition > maxDepth) currentPosition = minDepth;
-    
-    float step = (maxDepth - minDepth) / travelPeriod * timeDiff;
-    
-    float newPosition = currentPosition + step;
-    if (newPosition <= maxDepth) {
-        while (currentPosition <= newPosition) {
-            // draw lines at currentPosition
-            drawLevel(currentPosition);
-            
-            currentPosition += step;
-        }
-    }
-    else {
-        while (currentPosition < maxDepth) {
-            // draw lines at currentPosition
-            drawLevel(currentPosition);
-            
-            currentPosition += step;
-        }
-        
-        newPosition = newPosition - maxDepth + minDepth;
-        currentPosition = minDepth;
-        while (currentPosition < newPosition) {
-            // draw lines at currentPosition
-            drawLevel(currentPosition);
-            
-            currentPosition += step;
-        }
+    float currentPosition = minDepthThreshold;
+    while (currentPosition < maxDepthThreshold) {
+        // draw lines at currentPosition
+        drawLevel(currentPosition, currentPosition + depthStep);
+        currentPosition += depthStep;
     }
 }
 

@@ -25,33 +25,23 @@ private:
     
     ofxCvShortImage depthImage;
     ofxCvGrayscaleImage scaledDepthImage;
-    ofxCvGrayscaleImage processedImage;
+    
+    ofxCvGrayscaleImage tempImage1;
+    ofxCvGrayscaleImage tempImage2;
     
     ofShader outlineShader;
     ofShader fadeOutShader;
     ofFbo resultFbo;
     ofFbo tempFbo;
     
-    void makeSlice(float depth);
+    void makeSlice(float minDepth, float maxDepth);
     ofFbo sliceFbo;
     
-    void drawLevel(float depth);
-    
-    float timer;
-    float lastFadeOutTime;
-    
-    float currentPosition;
-    double cameraMinDepth;
-    double cameraMaxDepth;
-    
-    float minDepth;
-    float maxDepth;
+    void drawLevel(float minDepth, float maxDepth);
     
     ofxFloatSlider minDepthThreshold;
     ofxFloatSlider maxDepthThreshold;
     ofxFloatSlider depthStep;
-    ofxFloatSlider travelPeriod;
-    ofxFloatSlider fadeOutPeriod;
     ofxPanel gui;
 public:
     void setup();
