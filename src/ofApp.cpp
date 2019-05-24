@@ -21,7 +21,6 @@ void ofApp::setup(){
     tempImage2.allocate(cameraWidth, cameraHeight);
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
-    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     sliceFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     // clear result
@@ -112,14 +111,13 @@ void ofApp::makeSlice(float minDepth, float maxDepth) {
     float minDepthPoints = 255 * (minDepth - minDepthThreshold) / (maxDepthThreshold - minDepthThreshold);
     
     tempImage1 = scaledDepthImage;
-    tempImage1.threshold(maxDepthPoints);
+    tempImage1.threshold(minDepthPoints);
     tempImage2 = scaledDepthImage;
-    tempImage2.threshold(minDepthPoints);
+    tempImage2.threshold(maxDepthPoints);
     
     tempImage1 -= tempImage2;
     
-    sliceFbo.begin();
-    ofClear(0);
+    sliceFbo.begin();;
     outlineShader.begin();
     tempImage1.draw(0, 0);
     outlineShader.end();
@@ -130,13 +128,9 @@ void ofApp::drawLevel(float minDepth, float maxDepth) {
     // draw lines at depth level = depth
     makeSlice(minDepth, maxDepth);
     
-    tempFbo.begin();
-    resultFbo.draw(0, 0);
-    tempFbo.end();
-    
     resultFbo.begin();
     
-    of
+    ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
     
     sliceFbo.draw(0, 0);
     
@@ -151,7 +145,7 @@ void ofApp::update(){
     
     // clean image
     resultFbo.begin();
-    ofClear(0);
+    ofClear(255, 255, 255, 255);
     resultFbo.end();
     
     // update currentPosition;

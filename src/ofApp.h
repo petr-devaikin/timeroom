@@ -32,7 +32,6 @@ private:
     ofShader outlineShader;
     ofShader fadeOutShader;
     ofFbo resultFbo;
-    ofFbo tempFbo;
     
     void makeSlice(float minDepth, float maxDepth);
     ofFbo sliceFbo;

@@ -34,5 +34,5 @@ void main()
         }
     }
     
-    outputColor = vec4(result, result, result, 1);
+    outputColor = vec4(1 - result, 1 - result, 1 - result, 1);
 }
