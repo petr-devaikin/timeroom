@@ -31,9 +31,9 @@ void ofApp::setup(){
     
     // GUI
     gui.setup();
-    gui.add(minDepthThreshold.setup("min depth", 1, 1, 8));
+    gui.add(minDepthThreshold.setup("min depth", 1, 0.5, 8));
     gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
-    gui.add(depthStep.setup("depth step", 0.1, 0.05, 0.5));
+    gui.add(depthStep.setup("depth step", 0.04, 0.01, 0.2));
 }
 
 bool ofApp::initCamera() {
@@ -174,7 +174,36 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    if (key == ' ') {
+        string filename = "captured/" + ofGetTimestampString();
+        
+        ofDirectory dir(filename);
+        dir.create();
+        
+        ofPixels pixels;
+        pixels.allocate(cameraWidth, cameraHeight, GL_RGBA);
+        resultFbo.readToPixels(pixels);
+        
+        ofSaveImage(pixels, filename + ".jpg", OF_IMAGE_QUALITY_BEST);
+        
+        float currentPosition = minDepthThreshold;
+        int i = 0;
+        while (currentPosition < maxDepthThreshold) {
+            // draw lines at currentPosition
+            drawLevel(currentPosition, currentPosition + depthStep);
+            currentPosition += depthStep;
+            
+            char buff[100];
+            snprintf(buff, sizeof(buff), "%03d", i);
+            string buffAsStdStr = buff;
+            
+            makeSlice(currentPosition, currentPosition + depthStep);
+            sliceFbo.readToPixels(pixels);
+            ofSaveImage(pixels, filename + "/" + buffAsStdStr + ".jpg", OF_IMAGE_QUALITY_BEST);
+            
+            i++;
+        }
+    }
 }
 
 void ofApp::exit(){
