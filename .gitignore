@@ -1,4 +1,6 @@
 
 *.xcuserstate
-bin/timeroomDebug.app/Contents/MacOS/timeroomDebug
+bin/timeroomDebug.app/
+timeroom.xcodeproj/project.xcworkspace/
+timeroom.xcodeproj/project.xcworkspace/xcuserdata/pd.xcuserdatad/UserInterfaceState.xcuserstate
 *.xcuserstate
