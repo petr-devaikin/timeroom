@@ -21,6 +21,7 @@ void ofApp::setup(){
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    sliceFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     // clear result
     
@@ -123,12 +124,21 @@ void ofApp::updateFrames() {
     }
 }
 
-void ofApp::drawLevel(float depth) {
-    // draw lines at depth level = depth
+void ofApp::makeSlice(float depth) {
     float depthPoints = 255 * (depth - minDepth) / (maxDepth - minDepth);
     
     processedImage = scaledDepthImage;
     processedImage.threshold(depthPoints);
+    
+    sliceFbo.begin();
+    ofClear(0);
+    processedImage.draw(0, 0);
+    sliceFbo.end();
+}
+
+void ofApp::drawLevel(float depth) {
+    // draw lines at depth level = depth
+    makeSlice(depth);
     
     tempFbo.begin();
     resultFbo.draw(0, 0);
@@ -139,7 +149,7 @@ void ofApp::drawLevel(float depth) {
     outlineShader.begin();
     outlineShader.setUniformTexture("backgroundTex", resultFbo.getTexture(), 1);
     
-    processedImage.draw(0, 0);
+    sliceFbo.draw(0, 0);
     
     outlineShader.end();
     

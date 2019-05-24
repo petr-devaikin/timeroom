@@ -32,6 +32,9 @@ private:
     ofFbo resultFbo;
     ofFbo tempFbo;
     
+    void makeSlice(float depth);
+    ofFbo sliceFbo;
+    
     void drawLevel(float depth);
     
     float timer;
