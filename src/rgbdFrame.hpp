@@ -16,11 +16,12 @@ private:
     int width;
     int height;
 public:
+    rgbdFrame(int width, int height);
     rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue);
     
     ofxCvGrayscaleImage depthImage;
     ofxCvColorImage colorImage;
-    double timestamp;
+    //double timestamp;
 };
 
 #endif /* rgbdFrame_hpp */

@@ -7,8 +7,17 @@
 
 #include "rgbdFrame.hpp"
 
+rgbdFrame::rgbdFrame(int width, int height) {
+    depthImage.setUseTexture(false);
+    depthImage.allocate(width, height);
+    depthImage.invert(); // to make it "white" - all pixels are far away
+    
+    colorImage.setUseTexture(false);
+    colorImage.allocate(width, height);
+}
+
 rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue) {
-    timestamp = videoFrame.get_timestamp();
+    //timestamp = videoFrame.get_timestamp();
     width = videoFrame.get_width();
     height = videoFrame.get_height();
     
