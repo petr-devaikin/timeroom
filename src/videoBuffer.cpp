@@ -11,10 +11,49 @@ videoFragment::videoFragment(float startTimestamp, string filename) {
     this->startTimestamp = startTimestamp;
     this->filename = filename;
     state = recording;
+    
+    // init recorder
+    rgbRecorder.setVideoCodec("mpeg4");
+    rgbRecorder.setVideoBitrate("800k");
+    //vidRecorder.setAudioCodec("mp3");
+    //vidRecorder.setAudioBitrate("192k");
+    rgbRecorder.
+    ofAddListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+    
+    depthRecorder.setVideoCodec("mpeg4");
+    depthRecorder.setVideoBitrate("800k");
+    //vidRecorder.setAudioCodec("mp3");
+    //vidRecorder.setAudioBitrate("192k");
+    depthRecorder.
+    ofAddListener(depthRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+    
+    cout << "New fragment created" << filename << "\n";
+}
+
+void videoFragment::recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args){
+    cout << "The recoded video file is now complete." << "\n";
 }
 
 void videoFragment::addFrame(rgbdFrame frame) {
     // add new frame to the fragment
+    rgbRecorder.addFrame(frame.colorImage.getPixels());
+    depthRecorder.addFrame(frame.depthImageColored.getPixels());
+    
+    if (rgbRecorder.hasVideoError()) {
+        ofLogWarning("RGB The video recorder failed to write some frames!");
+    }
+    
+    if (rgbRecorder.hasAudioError()) {
+        ofLogWarning("RGB The video recorder failed to write some audio samples!");
+    }
+    
+    if (depthRecorder.hasVideoError()) {
+        ofLogWarning("Depth The video recorder failed to write some frames!");
+    }
+    
+    if (depthRecorder.hasAudioError()) {
+        ofLogWarning("Depth The video recorder failed to write some audio samples!");
+    }
 }
 
 rgbdFrame videoFragment::getFrame(float time) {
@@ -27,22 +66,31 @@ void videoFragment::loadFromDisk() {
     // ...
     
     state = inMemory;
+    
+    cout << "Fragment loaded " << filename << "\n";
 }
 
 void videoFragment::saveOnDisk() {
-    // ...
+    if (state == recording) {
+        ofRemoveListener(recorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+        recorder.close();
+    }
     
     clearMemory();
+    
+    state = onDisk;
+    
+    cout << "Fragment saved " << filename << "\n";
 }
 
 void videoFragment::clearMemory() {
     // remove video from memory
-    
-    state = inMemory;
 }
 
 void videoFragment::removeFromDisk() {
     // remove file from disk
+    
+    cout << "Fragment removed " << filename << "\n";
 }
 
 // Video Buffer
@@ -54,11 +102,16 @@ videoBuffer::videoBuffer(int videoWidth, int videoHeight, float fragmentLength) 
 }
 
 videoFragment videoBuffer::addNewFragment(float startTimestamp) {
+    fileCounter++;
+    
     char buff[100];
-    snprintf(buff, sizeof(buff), "fragments/%05d", fileCounter++);
+    snprintf(buff, sizeof(buff), "fragments/%05d", fileCounter);
     std::string fragmentFileName = buff;
     
-    return videoFragment(startTimestamp, fragmentFileName);
+    videoFragment fragment = videoFragment(startTimestamp, fragmentFileName);
+    fragments.push_back(fragment);
+    
+    return fragment;
 }
 
 void videoBuffer::addFrame(rgbdFrame frame) {

@@ -21,6 +21,7 @@ public:
     
     ofxCvGrayscaleImage depthImage;
     ofxCvColorImage colorImage;
+    ofxCvColorImage depthImageColored; // same depth picture but with rgb channels (still black and white)
     //double timestamp;
 };
 

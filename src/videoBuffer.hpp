@@ -10,11 +10,15 @@
 
 #include "rgbdFrame.hpp"
 #include "ofMain.h"
+#include "ofxVideoRecorder.h"
 
 enum fragmentState { recording, onDisk, inMemory };
 
 class videoFragment {
 private:
+    ofxVideoRecorder rgbRecorder;
+    ofxVideoRecorder depthRecorder;
+    void recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args);
 public:
     videoFragment(float startTimestamp, string filename);
     

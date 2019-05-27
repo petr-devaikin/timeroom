@@ -14,6 +14,9 @@ rgbdFrame::rgbdFrame(int width, int height) {
     
     colorImage.setUseTexture(false);
     colorImage.allocate(width, height);
+    
+    depthImageColored.setUseTexture(false);
+    depthImageColored.allocate(width, height);
 }
 
 rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue) {
@@ -42,4 +45,5 @@ rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, f
     // rescale image
     depthRawImage.convertToRange(0, 65535. * (65535. / maxDepthValue));
     depthImage = depthRawImage;
+    depthImageColored = depthImage;
 }
