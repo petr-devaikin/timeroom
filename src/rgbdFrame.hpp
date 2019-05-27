@@ -10,6 +10,7 @@
 
 #include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
+#include "ofMain.h"
 
 class rgbdFrame {
 private:
@@ -18,6 +19,7 @@ private:
 public:
     rgbdFrame(int width, int height);
     rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue);
+    rgbdFrame(ofPixels rgbPixels, ofPixels depthColoredPixels);
     
     ofxCvGrayscaleImage depthImage;
     ofxCvColorImage colorImage;

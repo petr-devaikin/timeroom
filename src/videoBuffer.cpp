@@ -7,27 +7,30 @@
 
 #include "videoBuffer.hpp"
 
-videoFragment::videoFragment(float startTimestamp, string filename) {
+videoFragment::videoFragment(float startTimestamp, string filename, int width, int height) {
     this->startTimestamp = startTimestamp;
     this->filename = filename;
-    state = recording;
+    state = preparedForRecording;
     
     // init recorder
+    initRecorders();
+    
+    cout << "New fragment created" << filename << "\n";
+}
+
+void videoFragment::initRecorders() {
     rgbRecorder.setVideoCodec("mpeg4");
     rgbRecorder.setVideoBitrate("800k");
-    //vidRecorder.setAudioCodec("mp3");
-    //vidRecorder.setAudioBitrate("192k");
     rgbRecorder.
     ofAddListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
     depthRecorder.setVideoCodec("mpeg4");
     depthRecorder.setVideoBitrate("800k");
-    //vidRecorder.setAudioCodec("mp3");
-    //vidRecorder.setAudioBitrate("192k");
     depthRecorder.
     ofAddListener(depthRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
-    cout << "New fragment created" << filename << "\n";
+    rgbRecorder.setup(filename + "_rgb.mov", width, height, 30);
+    depthRecorder.setup(filename + "_depth.mov", width, height, 30);
 }
 
 void videoFragment::recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args){
@@ -36,6 +39,12 @@ void videoFragment::recordingComplete(ofxVideoRecorderOutputFileCompleteEventArg
 
 void videoFragment::addFrame(rgbdFrame frame) {
     // add new frame to the fragment
+    if (state == preparedForRecording) {
+        rgbRecorder.start();
+        depthRecorder.start();
+        state = recording;
+    }
+    
     rgbRecorder.addFrame(frame.colorImage.getPixels());
     depthRecorder.addFrame(frame.depthImageColored.getPixels());
     
@@ -56,14 +65,18 @@ void videoFragment::addFrame(rgbdFrame frame) {
     }
 }
 
-rgbdFrame videoFragment::getFrame(float time) {
-    // add new frame to the fragment
+rgbdFrame videoFragment::getFrame(float position) {
+    // need to check if player is initialized
     
-    return rgbdFrame(1, 1); // <----- CHANGE !!!!!
+    rgbPlayer.setPosition(position);
+    depthPlayer.setPosition(position);
+    
+    return rgbFrame(rgbPlayer.getPixels(), depthPlayer.getPixels());
 }
 
 void videoFragment::loadFromDisk() {
-    // ...
+    rgbPlayer.load(filename + "_rgb.mov");
+    depthPlayer.load(filename + "_depth.mov");
     
     state = inMemory;
     
@@ -72,20 +85,22 @@ void videoFragment::loadFromDisk() {
 
 void videoFragment::saveOnDisk() {
     if (state == recording) {
-        ofRemoveListener(recorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
-        recorder.close();
+        ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+        rgbRecorder.close();
+        ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+        rgbRecorder.close();
     }
-    
-    clearMemory();
     
     state = onDisk;
     
     cout << "Fragment saved " << filename << "\n";
 }
 
+/*
 void videoFragment::clearMemory() {
     // remove video from memory
 }
+*/
 
 void videoFragment::removeFromDisk() {
     // remove file from disk
@@ -148,5 +163,5 @@ rgbdFrame videoBuffer::getFrame(float timestamp) {
     if (timestamp < requestedFragment.startTimestamp)
         return rgbdFrame(videoWidth, videoHeight);
     else
-        return requestedFragment.getFrame(timestamp - requestedFragment.startTimestamp);
+        return requestedFragment.getFrame((timestamp - requestedFragment.startTimestamp) / fragmentLength);
 }

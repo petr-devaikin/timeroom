@@ -10,13 +10,33 @@
 rgbdFrame::rgbdFrame(int width, int height) {
     depthImage.setUseTexture(false);
     depthImage.allocate(width, height);
+    depthImage.clear();
     depthImage.invert(); // to make it "white" - all pixels are far away
+    
+    colorImage.setUseTexture(false);
+    colorImage.clear();
+    colorImage.allocate(width, height);
+    
+    depthImageColored.setUseTexture(false);
+    depthImageColored.allocate(width, height);
+    depthImageColored.clear();
+    depthImageColored.invert(); // to make it "white" - all pixels are far away
+}
+
+rgbdFrame::rgbdFrame(ofPixels rgbPixels, ofPixels depthColoredPixels) {
+    depthImage.setUseTexture(false);
+    depthImage.allocate(width, height);
     
     colorImage.setUseTexture(false);
     colorImage.allocate(width, height);
     
     depthImageColored.setUseTexture(false);
     depthImageColored.allocate(width, height);
+    
+    // copy data
+    colorImage.setFromPixels(rgbPixels);
+    depthImageColored.setFromPixels(depthColoredPixels);
+    depthImage = depthColoredPixels;
 }
 
 rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float maxDepthValue) {
