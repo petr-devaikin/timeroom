@@ -10,6 +10,8 @@
 videoFragment::videoFragment(float startTimestamp, string filename, int width, int height) {
     this->startTimestamp = startTimestamp;
     this->filename = filename;
+    this->width = width;
+    this->height = height;
     state = preparedForRecording;
     
     // init recorder
@@ -31,6 +33,13 @@ void videoFragment::initRecorders() {
     
     rgbRecorder.setup(filename + "_rgb.mov", width, height, 30);
     depthRecorder.setup(filename + "_depth.mov", width, height, 30);
+}
+
+void videoFragment::stopRecording() {
+    ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+    rgbRecorder.close();
+    ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+    rgbRecorder.close();
 }
 
 void videoFragment::recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args){
@@ -71,7 +80,7 @@ rgbdFrame videoFragment::getFrame(float position) {
     rgbPlayer.setPosition(position);
     depthPlayer.setPosition(position);
     
-    return rgbFrame(rgbPlayer.getPixels(), depthPlayer.getPixels());
+    return rgbdFrame(rgbPlayer.getPixels(), depthPlayer.getPixels());
 }
 
 void videoFragment::loadFromDisk() {
@@ -85,10 +94,7 @@ void videoFragment::loadFromDisk() {
 
 void videoFragment::saveOnDisk() {
     if (state == recording) {
-        ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
-        rgbRecorder.close();
-        ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
-        rgbRecorder.close();
+        stopRecording();
     }
     
     state = onDisk;
@@ -105,7 +111,12 @@ void videoFragment::clearMemory() {
 void videoFragment::removeFromDisk() {
     // remove file from disk
     
-    cout << "Fragment removed " << filename << "\n";
+    if (state == recording)
+        stopRecording();
+    else if (state == onDisk)
+        cout << "Fragment removed " << filename << "\n";
+    else
+        cout << "Nothing to remove for fragment " << filename << "\n";
 }
 
 // Video Buffer
@@ -116,6 +127,12 @@ videoBuffer::videoBuffer(int videoWidth, int videoHeight, float fragmentLength) 
     this->videoHeight = videoHeight;
 }
 
+videoBuffer::~videoBuffer() {
+    if (fragments.size()) {
+        fragments[fragments.size() - 1].removeFromDisk();
+    }
+}
+
 videoFragment videoBuffer::addNewFragment(float startTimestamp) {
     fileCounter++;
     
@@ -123,7 +140,7 @@ videoFragment videoBuffer::addNewFragment(float startTimestamp) {
     snprintf(buff, sizeof(buff), "fragments/%05d", fileCounter);
     std::string fragmentFileName = buff;
     
-    videoFragment fragment = videoFragment(startTimestamp, fragmentFileName);
+    videoFragment fragment = videoFragment(startTimestamp, fragmentFileName, videoWidth, videoHeight);
     fragments.push_back(fragment);
     
     return fragment;

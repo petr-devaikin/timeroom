@@ -54,6 +54,8 @@ bool ofApp::initCamera() {
 }
 
 void ofApp::updateFrames() {
+    float currentTime = ofGetElapsedTimef();
+    
     rs2::frameset newFrames;
     if (pipe.poll_for_frames(&newFrames)) {
         frames = newFrames;
@@ -67,59 +69,43 @@ void ofApp::updateFrames() {
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         rs2::video_frame rgbFrame = frames.get_color_frame();
-        frameBuffer.push_back(rgbdFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale));    // add to the buffer
-    }
-    
-    // update delayFrames
-    for (int i = 0; i < REPEAT_NUMBER; i++) {
-        // increase number of frames until the delay is not too big
-        while (delayFrames[i] + 1 < frameBuffer.size() && frameBuffer[frameBuffer.size() - 1].timestamp - frameBuffer[delayFrames[i]].timestamp > delays[i])
-            delayFrames[i] += 1;
-    }
-    
-    // remove not used frames
-    while (delayFrames[REPEAT_NUMBER - 1] > maxNotUsedFrames) {
-        // now remove elements in vector
-        frameBuffer.erase(frameBuffer.begin(), frameBuffer.begin() + maxNotUsedFrames);
         
-        // adjust frame counters
-        for (int i = 0; i < REPEAT_NUMBER; i++)
-            delayFrames[i] -= maxNotUsedFrames;
-    }
-    
-    // update images to show
-    if (frameBuffer.size() > 0) {
-        // current pictures
-        currentImage = frameBuffer[frameBuffer.size() - 1].colorImage;
-        currentDepthImage = frameBuffer[frameBuffer.size() - 1].depthImage;
+        rgbdFrame newFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale);
+        
+        buffer.addFrame(newFrame);  // add to the buffer
+        
+        // update current view
+        currentImage = newFrame.colorImage;
+        currentDepthImage = newFrame.depthImage;
         currentDepthImage.updateTexture();
-        
-        // past pictures
-        for (int i = 0; i < REPEAT_NUMBER; i++) {
-            pastImages[i] = frameBuffer[delayFrames[i]].colorImage;
-            pastImages[i].updateTexture();
-            pastDepthImages[i] = frameBuffer[delayFrames[i]].depthImage;
-            pastDepthImages[i].updateTexture();
-        }
-        
-        
-        // merge images
-        mergedImage.begin();
-        
-        maskShader.begin();
-        maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
-        
-        maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
-        maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
-        maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
-        maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
-        
-        currentImage.draw(0, 0);
-        
-        maskShader.end();
-
-        mergedImage.end();
     }
+    
+    // past pictures
+    for (int i = 0; i < REPEAT_NUMBER; i++) {
+        rgbdFrame pastFrame = buffer.getFrame(currentTime - delays[i]);
+        pastImages[i] = pastFrame.colorImage;
+        pastImages[i].updateTexture();
+        pastDepthImages[i] = pastFrame.depthImage;
+        pastDepthImages[i].updateTexture();
+    }
+    
+    return;
+    // merge images
+    mergedImage.begin();
+    
+    maskShader.begin();
+    maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
+    
+    maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
+    maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
+    //maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
+    //maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
+    
+    currentImage.draw(0, 0);
+    
+    maskShader.end();
+
+    mergedImage.end();
 }
 
 //--------------------------------------------------------------
@@ -139,20 +125,20 @@ void ofApp::draw(){
         return;
     }
     
-    if (frameBuffer.size() > 0) {
-        
-        // latest frame
-        //currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
-        
-        // frame from the past
-        //pastImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
-        
-        // diff mask
-        //maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
-        
-        // merged
-        mergedImage.draw(0, 0);
-    }
+    // latest frame
+    currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
+    currentDepthImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+    
+    // frame from the past
+    pastImages[0].draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
+    pastDepthImages[0].draw(cameraWidth / 2, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+    
+    
+    // diff mask
+    //maskRGBImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+    
+    // merged
+    //mergedImage.draw(0, 0);
 }
 
 //--------------------------------------------------------------

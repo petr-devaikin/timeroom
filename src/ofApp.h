@@ -3,7 +3,7 @@
 #include "ofMain.h"
 #include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
-#include "rgbdFrame.hpp"
+#include "videoBuffer.hpp"
 
 #define REPEAT_NUMBER 2
 
@@ -13,8 +13,9 @@ private:
     const int cameraHeight = 720;
     const float MAX_DISTANCE = 4.;
     
-    float delays[REPEAT_NUMBER] = {5000, 10000};
-    int delayFrames[REPEAT_NUMBER] = {0, 0};
+    videoBuffer buffer;
+    
+    float delays[REPEAT_NUMBER] = {13000};
     const int maxNotUsedFrames = 5; // to remove not used frame not one by one
     
     // Camera stuff
@@ -31,8 +32,6 @@ private:
     ofxCvColorImage pastImages[REPEAT_NUMBER];
     ofxCvGrayscaleImage pastDepthImages[REPEAT_NUMBER];
     
-    vector<rgbdFrame> frameBuffer;
-    
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
     
@@ -42,6 +41,8 @@ private:
     ofFbo mergedImage;
     ofFbo tempFbo;
 public:
+    ofApp() : buffer(1280, 720, 5000) {};
+    
     void setup();
     void update();
     void draw();

@@ -21,7 +21,10 @@ private:
     ofVideoPlayer rgbPlayer;
     ofVideoPlayer depthPlayer;
     
+    int width, height;
+    
     void initRecorders();
+    void stopRecording();
     void recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args);
 public:
     videoFragment(float startTimestamp, string filename, int width, int height);
