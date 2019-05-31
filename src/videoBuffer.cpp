@@ -23,12 +23,10 @@ videoFragment::videoFragment(float startTimestamp, string filename, int width, i
 void videoFragment::initRecorders() {
     rgbRecorder.setVideoCodec("mpeg4");
     rgbRecorder.setVideoBitrate("800k");
-    rgbRecorder.
     ofAddListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
     depthRecorder.setVideoCodec("mpeg4");
     depthRecorder.setVideoBitrate("800k");
-    depthRecorder.
     ofAddListener(depthRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
     rgbRecorder.setup(filename + "_rgb.mov", width, height, 30);
@@ -128,19 +126,20 @@ videoBuffer::videoBuffer(int videoWidth, int videoHeight, float fragmentLength) 
 }
 
 videoBuffer::~videoBuffer() {
-    if (fragments.size()) {
-        fragments[fragments.size() - 1].removeFromDisk();
+    for (int i = 0; i < fragments.size(); i++) {
+        delete fragments[i];
+        fragments[i]->removeFromDisk();
     }
 }
 
-videoFragment videoBuffer::addNewFragment(float startTimestamp) {
+videoFragment * videoBuffer::addNewFragment(float startTimestamp) {
     fileCounter++;
     
     char buff[100];
     snprintf(buff, sizeof(buff), "fragments/%05d", fileCounter);
     std::string fragmentFileName = buff;
     
-    videoFragment fragment = videoFragment(startTimestamp, fragmentFileName, videoWidth, videoHeight);
+    videoFragment * fragment = new videoFragment(startTimestamp, fragmentFileName, videoWidth, videoHeight);
     fragments.push_back(fragment);
     
     return fragment;
@@ -151,34 +150,35 @@ void videoBuffer::addFrame(rgbdFrame frame) {
     
     if (fragments.size() == 0) {
         // no recorded fragments yet
-        videoFragment fragment = addNewFragment(currentTime);
-        fragment.addFrame(frame);
+        videoFragment * fragment = addNewFragment(currentTime);
+        fragment->addFrame(frame);
     }
     else {
         // get last fragment
-        videoFragment currentFragment = fragments[fragments.size() - 1];
+        videoFragment * currentFragment = fragments[fragments.size() - 1];
         // check if length is already exceeded
-        if (currentTime - currentFragment.startTimestamp + fragmentLength >= fragmentLength) {
-            currentFragment.saveOnDisk();
+        if (currentTime - currentFragment->startTimestamp + fragmentLength >= fragmentLength) {
+            currentFragment->saveOnDisk();
             
-            videoFragment fragment = addNewFragment(currentFragment.startTimestamp + fragmentLength);
-            fragment.addFrame(frame);
+            videoFragment * fragment = addNewFragment(currentFragment->startTimestamp + fragmentLength);
+            fragment->addFrame(frame);
         }
     }
 }
 
 rgbdFrame videoBuffer::getFrame(float timestamp) {
-    while (fragments.size() > 1 && fragments[1].startTimestamp >= timestamp) {
-        fragments[0].removeFromDisk();
+    while (fragments.size() > 1 && fragments[1]->startTimestamp >= timestamp) {
+        fragments[0]->removeFromDisk();
+        delete fragments[0];
         fragments.erase(fragments.begin());
     }
     
-    videoFragment requestedFragment = fragments[0];
-    if (requestedFragment.state == onDisk) requestedFragment.loadFromDisk();
+    videoFragment * requestedFragment = fragments[0];
+    if (requestedFragment->state == onDisk) requestedFragment->loadFromDisk();
     
     // check if requested frame has not been recorded yet
-    if (timestamp < requestedFragment.startTimestamp)
+    if (timestamp < requestedFragment->startTimestamp)
         return rgbdFrame(videoWidth, videoHeight);
     else
-        return requestedFragment.getFrame((timestamp - requestedFragment.startTimestamp) / fragmentLength);
+        return requestedFragment->getFrame((timestamp - requestedFragment->startTimestamp) / fragmentLength);
 }

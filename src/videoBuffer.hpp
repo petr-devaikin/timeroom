@@ -25,7 +25,6 @@ private:
     
     void initRecorders();
     void stopRecording();
-    void recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args);
 public:
     videoFragment(float startTimestamp, string filename, int width, int height);
     
@@ -40,6 +39,8 @@ public:
     void saveOnDisk();
     void removeFromDisk();
     //void clearMemory();
+    
+    void recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args);
 };
 
 class videoBuffer {
@@ -48,9 +49,9 @@ private:
     int videoWidth, videoHeight;
     int fileCounter = 0;
     
-    vector<videoFragment> fragments;
+    vector<videoFragment *> fragments;
     
-    videoFragment addNewFragment(float startTimestamp);
+    videoFragment * addNewFragment(float startTimestamp);
 public:
     videoBuffer(int videoWidth, int videoHeight, float fragmentLengts = 10000);
     ~videoBuffer();

@@ -21,6 +21,8 @@
 		5CC34D433F5806179935B89D /* Flow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 03A75A648BC4CF1D9DEDD0CE /* Flow.cpp */; };
 		63020F16C7E8DED980111241 /* ofxCvImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C6151136D101F857DAE12722 /* ofxCvImage.cpp */; };
 		6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */; };
+		6F7631D022A1A6A10080578D /* libPocoUtil.60.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7631CF22A1A6A10080578D /* libPocoUtil.60.dylib */; };
+		6F7631D222A1ACED0080578D /* libPocoFoundation.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F7631D122A1ACED0080578D /* libPocoFoundation.dylib */; };
 		6F823734229C882B0087806E /* librealsense2.2.19.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F823733229C882A0087806E /* librealsense2.2.19.0.dylib */; };
 		7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */; };
 		837220E80EB56CD44AD27F2A /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F2C6477A769C03A56D1401 /* ofxSlider.cpp */; };
@@ -213,6 +215,8 @@
 		6DD5A3CBB6D5BBA1C1354F1B /* flann.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = flann.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/flann.hpp; sourceTree = SOURCE_ROOT; };
 		6E20DD7238FD1446DA7DB1D5 /* histogram.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = histogram.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudev/grid/histogram.hpp; sourceTree = SOURCE_ROOT; };
 		6EF5548EEA5A855DAA35C873 /* cudafilters.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudafilters.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudafilters.hpp; sourceTree = SOURCE_ROOT; };
+		6F7631CF22A1A6A10080578D /* libPocoUtil.60.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libPocoUtil.60.dylib; path = ../../../../../../../usr/local/Cellar/poco/1.9.0_1/lib/libPocoUtil.60.dylib; sourceTree = "<group>"; };
+		6F7631D122A1ACED0080578D /* libPocoFoundation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libPocoFoundation.dylib; path = ../../../../../../../usr/local/lib/libPocoFoundation.dylib; sourceTree = "<group>"; };
 		6F823733229C882A0087806E /* librealsense2.2.19.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = librealsense2.2.19.0.dylib; sourceTree = "<group>"; };
 		6F82373622A193150087806E /* mask.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = mask.vert; sourceTree = "<group>"; };
 		6F82373722A193150087806E /* mask.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = mask.frag; sourceTree = "<group>"; };
@@ -648,6 +652,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6F7631D222A1ACED0080578D /* libPocoFoundation.dylib in Frameworks */,
+				6F7631D022A1A6A10080578D /* libPocoUtil.60.dylib in Frameworks */,
 				6F823734229C882B0087806E /* librealsense2.2.19.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1066,6 +1072,16 @@
 			children = (
 			);
 			name = local_addons;
+			sourceTree = "<group>";
+		};
+		6F7631CE22A1A6A10080578D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6F7631D122A1ACED0080578D /* libPocoFoundation.dylib */,
+				6F823733229C882A0087806E /* librealsense2.2.19.0.dylib */,
+				6F7631CF22A1A6A10080578D /* libPocoUtil.60.dylib */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		6F82373522A193150087806E /* shadersGL3 */ = {
@@ -1810,7 +1826,7 @@
 				BB4B014C10F69532006C3DED /* addons */,
 				6948EE371B920CB800B5AC1A /* local_addons */,
 				E4B69B5B0A3A1756003C02F2 /* timeroomDebug.app */,
-				6F823733229C882A0087806E /* librealsense2.2.19.0.dylib */,
+				6F7631CE22A1A6A10080578D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -2197,6 +2213,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					/usr/local/Cellar/poco/1.9.0_1/lib,
 				);
 				OTHER_LDFLAGS = (
 					"$(OF_CORE_LIBS)",
@@ -2468,6 +2485,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					/usr/local/Cellar/poco/1.9.0_1/lib,
 				);
 				OTHER_LDFLAGS = (
 					"$(OF_CORE_LIBS)",
@@ -2557,6 +2575,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
+					/usr/local/Cellar/poco/1.9.0_1/lib,
 				);
 				OTHER_LDFLAGS = (
 					"$(OF_CORE_LIBS)",
