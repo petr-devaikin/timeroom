@@ -23,10 +23,14 @@ videoFragment::videoFragment(float startTimestamp, string filename, int width, i
 void videoFragment::initRecorders() {
     rgbRecorder.setVideoCodec("mpeg4");
     rgbRecorder.setVideoBitrate("800k");
+    rgbRecorder.setAudioCodec("mp3");
+    rgbRecorder.setAudioBitrate("192k");
     ofAddListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
     depthRecorder.setVideoCodec("mpeg4");
     depthRecorder.setVideoBitrate("800k");
+    depthRecorder.setAudioCodec("mp3");
+    depthRecorder.setAudioBitrate("192k");
     ofAddListener(depthRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     
     rgbRecorder.setup(filename + "_rgb.mov", width, height, 30);
@@ -36,8 +40,9 @@ void videoFragment::initRecorders() {
 void videoFragment::stopRecording() {
     ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
     rgbRecorder.close();
-    ofRemoveListener(rgbRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
-    rgbRecorder.close();
+    
+    ofRemoveListener(depthRecorder.outputFileCompleteEvent, this, &videoFragment::recordingComplete);
+    depthRecorder.close();
 }
 
 void videoFragment::recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args){
@@ -173,12 +178,16 @@ rgbdFrame videoBuffer::getFrame(float timestamp) {
         fragments.erase(fragments.begin());
     }
     
-    videoFragment * requestedFragment = fragments[0];
-    if (requestedFragment->state == onDisk) requestedFragment->loadFromDisk();
-    
-    // check if requested frame has not been recorded yet
-    if (timestamp < requestedFragment->startTimestamp)
-        return rgbdFrame(videoWidth, videoHeight);
+    if (fragments.size()) {
+        videoFragment * requestedFragment = fragments[0];
+        if (requestedFragment->state == onDisk) requestedFragment->loadFromDisk();
+        
+        // check if requested frame has not been recorded yet
+        if (timestamp < requestedFragment->startTimestamp)
+            return rgbdFrame(videoWidth, videoHeight);
+        else
+            return requestedFragment->getFrame((timestamp - requestedFragment->startTimestamp) / fragmentLength);
+    }
     else
-        return requestedFragment->getFrame((timestamp - requestedFragment->startTimestamp) / fragmentLength);
+        return rgbdFrame(videoWidth, videoHeight);
 }

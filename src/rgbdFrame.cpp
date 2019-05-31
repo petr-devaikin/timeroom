@@ -10,16 +10,16 @@
 rgbdFrame::rgbdFrame(int width, int height) {
     depthImage.setUseTexture(false);
     depthImage.allocate(width, height);
-    depthImage.clear();
+    //depthImage.clear();
     depthImage.invert(); // to make it "white" - all pixels are far away
     
     colorImage.setUseTexture(false);
-    colorImage.clear();
+    //colorImage.clear();
     colorImage.allocate(width, height);
     
     depthImageColored.setUseTexture(false);
     depthImageColored.allocate(width, height);
-    depthImageColored.clear();
+    //depthImageColored.clear();
     depthImageColored.invert(); // to make it "white" - all pixels are far away
 }
 
