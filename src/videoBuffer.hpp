@@ -12,7 +12,7 @@
 #include "ofMain.h"
 #include "ofxVideoRecorder.h"
 
-enum fragmentState { preparedForRecording, recording, onDisk, inMemory };
+enum fragmentState { preparedForRecording, recording, onDisk, inMemory, stopping };
 
 class videoFragment {
 private:
@@ -27,6 +27,7 @@ private:
     void stopRecording();
 public:
     videoFragment(float startTimestamp, string filename, int width, int height);
+    ~videoFragment();
     
     float startTimestamp;
     fragmentState state;
@@ -39,6 +40,8 @@ public:
     void saveOnDisk();
     void removeFromDisk();
     //void clearMemory();
+    
+    bool isStopped();
     
     void recordingComplete(ofxVideoRecorderOutputFileCompleteEventArgs& args);
 };
@@ -53,7 +56,7 @@ private:
     
     videoFragment * addNewFragment(float startTimestamp);
 public:
-    videoBuffer(int videoWidth, int videoHeight, float fragmentLengts = 10000);
+    videoBuffer(int videoWidth, int videoHeight, float fragmentLengts = 5);
     ~videoBuffer();
     
     void addFrame(rgbdFrame frame);

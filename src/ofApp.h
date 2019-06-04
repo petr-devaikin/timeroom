@@ -15,7 +15,7 @@ private:
     
     videoBuffer buffer;
     
-    float delays[REPEAT_NUMBER] = {13000};
+    float delays[REPEAT_NUMBER] = {60};
     const int maxNotUsedFrames = 5; // to remove not used frame not one by one
     
     // Camera stuff
@@ -41,7 +41,7 @@ private:
     ofFbo mergedImage;
     ofFbo tempFbo;
 public:
-    ofApp() : buffer(1280, 720, 5000) {};
+    ofApp() : buffer(1280, 720, 15) {};
     
     void setup();
     void update();

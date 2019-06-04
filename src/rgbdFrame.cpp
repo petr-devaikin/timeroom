@@ -51,6 +51,9 @@ rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, f
     depthImage.setUseTexture(false);
     depthImage.allocate(depthFrame.get_width(), depthFrame.get_height());
     
+    depthImageColored.setUseTexture(false);
+    depthImageColored.allocate(depthFrame.get_width(), depthFrame.get_height());
+    
     ofxCvShortImage depthRawImage; // temporal image before scaling
     depthRawImage.setUseTexture(false);
     depthRawImage.allocate(depthFrame.get_width(), depthFrame.get_height());
