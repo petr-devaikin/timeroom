@@ -7,16 +7,16 @@ void ofApp::setup(){
         align_to_color = new rs2::align(RS2_STREAM_INFRARED);
     }
     
-    currentImage.allocate(cameraWidth, cameraHeight);
-    currentDepthImage.allocate(cameraWidth, cameraHeight);
+    resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
+    cout << "2\n";
+    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    cout << "3\n";
     
-    pastImage.allocate(cameraWidth, cameraHeight);
-    pastDepthImage.allocate(cameraWidth, cameraHeight);
-    
-    mergedImage.allocate(cameraWidth, cameraHeight, GL_RGBA);
-    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
+    currentImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    currentDepthImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
     
     maskShader.load("shadersGL3/mask");
+    maxShader.load("shadersGL3/max");
     
     timer = 0;
 }
@@ -37,8 +37,8 @@ bool ofApp::initCamera() {
         
         // depth sensor settings
         depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
-        depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
-        depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
+        //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
+        //depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
         
         cameraDepthScale = depth_sensor.get_depth_scale();
         
@@ -77,52 +77,45 @@ void ofApp::updateFrames() {
         buffer.addFrame(newFrame);  // add to the buffer
         
         // update current view
-        currentImage.setFromPixels(newFrame->irPixels);
-        currentDepthImage.setFromPixels(newFrame->depthPixels);
+        currentImage.loadData(newFrame->irPixels);
+        currentDepthImage.loadData(newFrame->depthPixels);
     }
     
-    mergedImage.begin();
+    ofTexture resultTexture;
+    ofTexture resultDepthTexture;
+    ofTexture newLayerTexture;
+    ofTexture newLayerDepthTexture;
     
-    ofClear(0);
-    currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
-    currentDepthImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
-    
+    resultTexture = currentImage;
+    resultDepthTexture = currentDepthImage;
     
     // past pictures
-    int i = 0;
     for (float g : ghostTimestamps) {
         rgbdFrame * pastFrame = buffer.getFrame(g);
-        pastImage.setFromPixels(pastFrame->irPixels);
-        pastDepthImage.setFromPixels(pastFrame->depthPixels);
+        newLayerTexture.loadData(pastFrame->irPixels);
+        newLayerDepthTexture.loadData(pastFrame->depthPixels);
         
-        if (i < 4) {
-            pastImage.draw(i * cameraWidth / 4, cameraHeight / 2, cameraWidth / 4, cameraHeight / 4);
-            pastDepthImage.draw(i * cameraWidth / 4, cameraHeight * 3 / 4, cameraWidth / 4, cameraHeight / 4);
-            
-            stringstream str;
-            str << i << " " << currentTime - g;
-            ofDrawBitmapString(str.str(), i * cameraWidth / 4, cameraHeight / 2);
-            
-            i++;
-        }
+        resultFbo.begin();
+        maskShader.begin();
+        maskShader.setUniformTexture("tex1", resultTexture, 2);
+        maskShader.setUniformTexture("tex1Depth", resultDepthTexture, 3);
+        maskShader.setUniformTexture("tex0Depth", newLayerDepthTexture, 1);
+        newLayerTexture.draw(0, 0);
+        maskShader.end();
+        resultFbo.end();
+        
+        resultDepthFbo.begin();
+        maxShader.begin();
+        maskShader.setUniformTexture("tex1", resultDepthTexture, 1);
+        newLayerTexture.draw(0, 0);
+        maxShader.end();
+        resultDepthFbo.end();
+        
+        resultTexture = resultFbo.getTexture();
+        resultDepthTexture = resultDepthFbo.getTexture();
+        
+        break;
     }
-    
-    mergedImage.end();
-    
-    return;
-    // merge images
-    mergedImage.begin();
-    
-    maskShader.begin();
-    maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
-    
-    maskShader.setUniformTexture("background0", pastImage.getTexture(), 2);
-    maskShader.setUniformTexture("background0Depth", pastDepthImage.getTexture(), 3);
-    
-    currentImage.draw(0, 0);
-    maskShader.end();
-
-    mergedImage.end();
 }
 
 void ofApp::removeOldGhosts() {
@@ -176,7 +169,7 @@ void ofApp::draw(){
     }
     
     // latest frame
-    mergedImage.draw(0, 0);
+    resultFbo.draw(0, 0);
     
     
     // diff mask

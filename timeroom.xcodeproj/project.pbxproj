@@ -217,6 +217,8 @@
 		6EF5548EEA5A855DAA35C873 /* cudafilters.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudafilters.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudafilters.hpp; sourceTree = SOURCE_ROOT; };
 		6F7631CF22A1A6A10080578D /* libPocoUtil.60.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libPocoUtil.60.dylib; path = ../../../../../../../usr/local/Cellar/poco/1.9.0_1/lib/libPocoUtil.60.dylib; sourceTree = "<group>"; };
 		6F7631D122A1ACED0080578D /* libPocoFoundation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libPocoFoundation.dylib; path = ../../../../../../../usr/local/lib/libPocoFoundation.dylib; sourceTree = "<group>"; };
+		6F7631D322A85DAF0080578D /* max.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = max.frag; sourceTree = "<group>"; };
+		6F7631D422A85DB00080578D /* max.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = max.vert; sourceTree = "<group>"; };
 		6F823733229C882A0087806E /* librealsense2.2.19.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = librealsense2.2.19.0.dylib; sourceTree = "<group>"; };
 		6F82373622A193150087806E /* mask.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = mask.vert; sourceTree = "<group>"; };
 		6F82373722A193150087806E /* mask.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = mask.frag; sourceTree = "<group>"; };
@@ -1087,6 +1089,8 @@
 		6F82373522A193150087806E /* shadersGL3 */ = {
 			isa = PBXGroup;
 			children = (
+				6F7631D322A85DAF0080578D /* max.frag */,
+				6F7631D422A85DB00080578D /* max.vert */,
 				6F82373622A193150087806E /* mask.vert */,
 				6F82373722A193150087806E /* mask.frag */,
 			);

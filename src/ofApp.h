@@ -33,10 +33,8 @@ private:
     rs2::frameset frames;
     // End of Camera stuff
     
-    ofxCvGrayscaleImage currentImage;
-    ofxCvGrayscaleImage currentDepthImage;
-    ofxCvGrayscaleImage pastImage;
-    ofxCvGrayscaleImage pastDepthImage;
+    ofTexture currentImage;
+    ofTexture currentDepthImage;
     
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
@@ -44,8 +42,9 @@ private:
     rs2::align * align_to_color;
     
     ofShader maskShader;
-    ofFbo mergedImage;
-    ofFbo tempFbo;
+    ofShader maxShader;
+    ofFbo resultFbo;
+    ofFbo resultDepthFbo;
     
     float timer;
     float timeDelta;

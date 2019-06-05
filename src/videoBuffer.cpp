@@ -48,7 +48,7 @@ rgbdFrame * videoBuffer::getFrame(float timestamp) {
     rgbdFrame * newestFrame = frames.back();
     
     if (timestamp < oldestFrame->timestamp) {
-        ofLogWarning("Trying to get too old frame");
+        // ofLogWarning("Trying to get too old frame");
         return emptyFrame;
     }
     else if (timestamp >= newestFrame->timestamp) {

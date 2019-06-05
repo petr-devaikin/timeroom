@@ -5,8 +5,8 @@
 // these are our textures
 uniform sampler2DRect tex0;
 uniform sampler2DRect tex0Depth;
-uniform sampler2DRect background0;
-uniform sampler2DRect background0Depth;
+uniform sampler2DRect tex1;
+uniform sampler2DRect tex1Depth;
 
 // this comes from the vertex shader
 in vec2 texCoordVarying;
@@ -20,14 +20,13 @@ void main()
     vec4 tex0Color = texture(tex0, texCoordVarying).rgba;
     vec4 tex0DepthValue = texture(tex0Depth, texCoordVarying).rgba;
     
-    vec4 background0Color = texture(background0, texCoordVarying).rgba;
-    vec4 background0DepthValue = texture(background0Depth, texCoordVarying).rgba;
-
-    outputColor = tex0Color;
-    float outputDepth = tex0DepthValue.r;
+    vec4 tex1Color = texture(tex1, texCoordVarying).rgba;
+    vec4 tex1DepthValue = texture(tex1Depth, texCoordVarying).rgba;
     
-    if (background0DepthValue.r < outputDepth) {
-        outputColor = background0Color;
-        outputDepth = background0DepthValue.r;
+    if (tex0DepthValue.r < tex1DepthValue.r) {
+        outputColor = tex0Color;
+    }
+    else {
+        outputColor = tex1Color;
     }
 }
