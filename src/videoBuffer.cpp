@@ -13,19 +13,13 @@ videoBuffer::videoBuffer(int videoWidth, int videoHeight, float maxLength) {
     this->videoWidth = videoWidth;
     this->videoHeight = videoHeight;
     
-    addedFrameCount = 0;
-    totalFrameCount = maxLength * MAX_FPS;
-    
-    frames = new rgbdFrame * [totalFrameCount];
     emptyFrame = new rgbdFrame(videoWidth, videoHeight);
 }
 
 videoBuffer::~videoBuffer() {
-    for (int i = 0; i < addedFrameCount; i++) {
-        delete frames[i];
+    for (rgbdFrame * f : frames) {
+        delete f;
     }
-    
-    delete[] frames;
     
     delete emptyFrame;
 }
@@ -35,51 +29,33 @@ void videoBuffer::addFrame(rgbdFrame * frame) {
     
     // remove old frames
     int framesToRemove = 0;
-    while (framesToRemove > addedFrameCount && currentTime - frames[framesToRemove]->timestamp > maxLength)
-        framesToRemove++;
-    
-    framesToRemove--;
-    
-    if (framesToRemove > 0) {
-        // remove old frames
-        for (int i = 0; i < framesToRemove; i++) {
-            delete frames[i];
-        }
-        
-        // shift not removed frames to the beginning
-        addedFrameCount -= framesToRemove;
-        for (int i = 0; i < addedFrameCount; i++) {
-            frames[i] = frames[i + framesToRemove];
-        }
+    while (frames.size() > 1 && currentTime - frames.front()->timestamp > maxLength) {
+        delete frames.front();
+        frames.pop_front();
     }
     
     // add new frame
-    if (addedFrameCount < totalFrameCount) {
-        frames[addedFrameCount] = frame;
-        addedFrameCount++;
-    }
-    else
-        ofLogWarning("Buffer overloaded");
+    frames.push_back(frame);
 }
 
 rgbdFrame * videoBuffer::getFrame(float timestamp) {
-    if (addedFrameCount == 0) {
-        ofLogWarning("Trying to get a frame while no frames added");
+    if (frames.size() == 0) {
+        //ofLogWarning("Trying to get a frame while no frames added");
         return emptyFrame;
     }
     
-    rgbdFrame * oldestFrame = frames[0];
-    rgbdFrame * newestFrame = frames[addedFrameCount - 1];
+    rgbdFrame * oldestFrame = frames.front();
+    rgbdFrame * newestFrame = frames.back();
     
     if (timestamp < oldestFrame->timestamp) {
-        ofLogWarning("Trying to get a too old frame");
+        ofLogWarning("Trying to get too old frame");
         return emptyFrame;
     }
     else if (timestamp >= newestFrame->timestamp) {
         return newestFrame;
     }
     else {
-        int position = floor((timestamp - oldestFrame->timestamp) / (newestFrame->timestamp - oldestFrame->timestamp));
-        return frames[position];
+        unsigned int position = floor(frames.size() * (timestamp - oldestFrame->timestamp) / (newestFrame->timestamp - oldestFrame->timestamp));
+        return * next(frames.begin(), position);
     }
 }

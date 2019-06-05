@@ -8,39 +8,39 @@
 #include "rgbdFrame.hpp"
 
 rgbdFrame::rgbdFrame(int width, int height) {
-    depthImage.setUseTexture(false);
-    depthImage.allocate(width, height);
-    //depthImage.clear();
-    depthImage.invert(); // to make it "white" - all pixels are far away
+    this->width = width;
+    this->height = height;
     
-    irImage.setUseTexture(false);
-    //colorImage.clear();
-    irImage.allocate(width, height);
+    depthPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
+    memset(depthPixels.getData(), 255, width * height);
+    
+    irPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
+    memset(irPixels.getData(), 0, width * height);
 }
 
 
-rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float minDepthValue, float maxDepthValue) {
-    //timestamp = videoFrame.get_timestamp();
+rgbdFrame::rgbdFrame(float timestamp, rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float minDepthValue, float maxDepthValue) {
+    this->timestamp = timestamp;
     width = videoFrame.get_width();
     height = videoFrame.get_height();
     
     // allocate images
-    irImage.setUseTexture(false);
-    irImage.allocate(depthFrame.get_width(), depthFrame.get_height());
     
-    depthImage.setUseTexture(false);
-    depthImage.allocate(depthFrame.get_width(), depthFrame.get_height());
+    // ir pixels
+    irPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
+    memcpy(irPixels.getData(), videoFrame.get_data(), width * height);
     
-    
+    // depth pixels
     ofxCvShortImage depthRawImage; // temporal image before scaling
     depthRawImage.setUseTexture(false);
-    depthRawImage.allocate(depthFrame.get_width(), depthFrame.get_height());
+    depthRawImage.allocate(width, height);
     
-    // copy data
-    memcpy(irImage.getPixels().getData(), videoFrame.get_data(), width * height * 3);
+    ofxCvGrayscaleImage depthConvertedImage;
+    depthConvertedImage.setUseTexture(false);
+    depthConvertedImage.allocate(width, height);
+    
     memcpy(depthRawImage.getShortPixelsRef().getData(), depthFrame.get_data(), width * height * 2);
     
-    irImage.flagImageChanged();
     depthRawImage.flagImageChanged();
     
     // rescale image
@@ -48,5 +48,8 @@ rgbdFrame::rgbdFrame(rs2::video_frame videoFrame, rs2::depth_frame depthFrame, f
     float newMaxPoints = minDepthValue + 65535. * 65535. / (maxDepthValue - minDepthValue);
     
     depthRawImage.convertToRange(-newMinPoints, newMaxPoints);
-    depthImage = depthRawImage;
+    depthConvertedImage = depthRawImage;
+    
+    depthPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
+    memcpy(depthPixels.getData(), depthConvertedImage.getPixels().getData(), width * height);
 }

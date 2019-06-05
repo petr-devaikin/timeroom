@@ -4,7 +4,7 @@
 void ofApp::setup(){
     if (initCamera()) {
         frames = pipe.wait_for_frames();
-        align_to_color = new rs2::align(RS2_STREAM_COLOR);
+        align_to_color = new rs2::align(RS2_STREAM_INFRARED);
     }
     
     currentImage.allocate(cameraWidth, cameraHeight);
@@ -24,8 +24,10 @@ void ofApp::setup(){
 bool ofApp::initCamera() {
     cout << "Looking for RealSense\n";
     rs2::config cfg;
-    cfg.enable_stream(RS2_STREAM_DEPTH, cameraWidth, cameraHeight);
     cfg.enable_stream(RS2_STREAM_COLOR, cameraWidth, cameraHeight);
+    cfg.enable_stream(RS2_STREAM_DEPTH, cameraWidth, cameraHeight);
+    cfg.enable_stream(RS2_STREAM_INFRARED, cameraWidth, cameraHeight, RS2_FORMAT_Y8);
+    
     rs2::context ctx;
     auto device_list = ctx.query_devices();
     
@@ -62,26 +64,22 @@ void ofApp::updateFrames() {
         
         frames = temp_filter.process(frames);
         frames = hole_filter.process(frames);
-        frames = align_to_color->process(frames);
+        //frames = align_to_color->process(frames);
         
         // !!! need to process all the frames in frameset, not only one
         
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
-        rs2::video_frame rgbFrame = frames.get_color_frame();
+        rs2::video_frame rgbFrame = frames.get_infrared_frame();
         
-        rgbdFrame * newFrame = new rgbdFrame(rgbFrame, depthFrame, MIN_DISTANCE / cameraDepthScale, MAX_DISTANCE / cameraDepthScale);
+        rgbdFrame * newFrame = new rgbdFrame(currentTime, rgbFrame, depthFrame, MIN_DISTANCE / cameraDepthScale, MAX_DISTANCE / cameraDepthScale);
         
         buffer.addFrame(newFrame);  // add to the buffer
         
         // update current view
-        currentImage = newFrame->irImage;
-        currentDepthImage = newFrame->depthImage;
-        currentDepthImage.updateTexture();
+        currentImage.setFromPixels(newFrame->irPixels);
+        currentDepthImage.setFromPixels(newFrame->depthPixels);
     }
-    
-    for (int i = 0; i < ghostTimestamps.size(); i)
-    
     
     mergedImage.begin();
     
@@ -89,18 +87,21 @@ void ofApp::updateFrames() {
     currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
     currentDepthImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
     
+    
     // past pictures
     int i = 0;
     for (float g : ghostTimestamps) {
         rgbdFrame * pastFrame = buffer.getFrame(g);
-        pastImage = pastFrame->irImage;
-        pastImage.updateTexture();
-        pastDepthImage = pastFrame->depthImage;
-        pastDepthImage.updateTexture();
+        pastImage.setFromPixels(pastFrame->irPixels);
+        pastDepthImage.setFromPixels(pastFrame->depthPixels);
         
         if (i < 4) {
             pastImage.draw(i * cameraWidth / 4, cameraHeight / 2, cameraWidth / 4, cameraHeight / 4);
             pastDepthImage.draw(i * cameraWidth / 4, cameraHeight * 3 / 4, cameraWidth / 4, cameraHeight / 4);
+            
+            stringstream str;
+            str << i << " " << currentTime - g;
+            ofDrawBitmapString(str.str(), i * cameraWidth / 4, cameraHeight / 2);
             
             i++;
         }
@@ -125,29 +126,23 @@ void ofApp::updateFrames() {
 }
 
 void ofApp::removeOldGhosts() {
-    float currentTime = ofGetElapsedTimef();
-    
-    while (ghostTimestamps.size() && currentTime - ghostTimestamps.front() > maxGhostLifeTime * 2)
+    while (ghostTimestamps.size() && timer - ghostTimestamps.front() > maxGhostLifeTime * 2)
         ghostTimestamps.pop_front();
 }
 
 void ofApp::addNewGhost() {
-    float currentTime = ofGetElapsedTimef();
-    
-    while (lastGhostGeneratedTimestamp + ghostGenerationInterval <= currentTime) {
+    while (lastGhostGeneratedTimestamp + ghostGenerationInterval <= timer) {
         lastGhostGeneratedTimestamp += ghostGenerationInterval;
-        if (currentTime - lastGhostGeneratedTimestamp <= maxGhostLifeTime * 2)
+        if (timer - lastGhostGeneratedTimestamp <= 2 * maxGhostLifeTime)
             ghostTimestamps.push_back(lastGhostGeneratedTimestamp);
     }
 }
 
 void ofApp::updateGhosts() {
-    float currentTime = ofGetElapsedTimef();
-    
     if (ghostTimestamps.size()) {
         auto p = ghostTimestamps.begin();
         while (p != ghostTimestamps.end()) {
-            *p -= currentTime - timer;
+            *p -= timeDelta;
             p++;
         }
         
@@ -161,11 +156,13 @@ void ofApp::updateGhosts() {
 void ofApp::update(){
     if (!cameraFound) return;
     
+    float newTimer = ofGetElapsedTimef();
+    timeDelta = newTimer - timer;
+    timer = newTimer;
+    
     updateGhosts();
     
     updateFrames();
-    
-    timer = ofGetElapsedTimef();
 }
 
 //--------------------------------------------------------------

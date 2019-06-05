@@ -33,9 +33,9 @@ private:
     rs2::frameset frames;
     // End of Camera stuff
     
-    ofxCvColorImage currentImage;
+    ofxCvGrayscaleImage currentImage;
     ofxCvGrayscaleImage currentDepthImage;
-    ofxCvColorImage pastImage;
+    ofxCvGrayscaleImage pastImage;
     ofxCvGrayscaleImage pastDepthImage;
     
     rs2::temporal_filter temp_filter;
@@ -48,6 +48,7 @@ private:
     ofFbo tempFbo;
     
     float timer;
+    float timeDelta;
 public:
     ofApp() : buffer(1280, 720, 15) {};
     

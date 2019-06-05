@@ -19,10 +19,7 @@ private:
     float maxLength;
     int videoWidth, videoHeight;
     
-    int totalFrameCount;
-    int addedFrameCount;
-    
-    rgbdFrame ** frames;
+    list<rgbdFrame *> frames;
     rgbdFrame * emptyFrame;
 public:
     videoBuffer(int videoWidth, int videoHeight, float maxLength);
