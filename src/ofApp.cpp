@@ -10,15 +10,15 @@ void ofApp::setup(){
     currentImage.allocate(cameraWidth, cameraHeight);
     currentDepthImage.allocate(cameraWidth, cameraHeight);
     
-    for (int i = 0; i < REPEAT_NUMBER; i++) {
-        pastImages[i].allocate(cameraWidth, cameraHeight);
-        pastDepthImages[i].allocate(cameraWidth, cameraHeight);
-    }
+    pastImage.allocate(cameraWidth, cameraHeight);
+    pastDepthImage.allocate(cameraWidth, cameraHeight);
     
     mergedImage.allocate(cameraWidth, cameraHeight, GL_RGBA);
     tempFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     maskShader.load("shadersGL3/mask");
+    
+    timer = 0;
 }
 
 bool ofApp::initCamera() {
@@ -70,24 +70,43 @@ void ofApp::updateFrames() {
         rs2::depth_frame depthFrame = frames.get_depth_frame();
         rs2::video_frame rgbFrame = frames.get_color_frame();
         
-        rgbdFrame newFrame(rgbFrame, depthFrame, MAX_DISTANCE / cameraDepthScale);
+        rgbdFrame * newFrame = new rgbdFrame(rgbFrame, depthFrame, MIN_DISTANCE / cameraDepthScale, MAX_DISTANCE / cameraDepthScale);
         
         buffer.addFrame(newFrame);  // add to the buffer
         
         // update current view
-        currentImage = newFrame.colorImage;
-        currentDepthImage = newFrame.depthImage;
+        currentImage = newFrame->irImage;
+        currentDepthImage = newFrame->depthImage;
         currentDepthImage.updateTexture();
     }
     
+    for (int i = 0; i < ghostTimestamps.size(); i)
+    
+    
+    mergedImage.begin();
+    
+    ofClear(0);
+    currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
+    currentDepthImage.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
+    
     // past pictures
-    for (int i = 0; i < REPEAT_NUMBER; i++) {
-        rgbdFrame pastFrame = buffer.getFrame(currentTime - delays[i]);
-        pastImages[i] = pastFrame.colorImage;
-        pastImages[i].updateTexture();
-        pastDepthImages[i] = pastFrame.depthImage;
-        pastDepthImages[i].updateTexture();
+    int i = 0;
+    for (float g : ghostTimestamps) {
+        rgbdFrame * pastFrame = buffer.getFrame(g);
+        pastImage = pastFrame->irImage;
+        pastImage.updateTexture();
+        pastDepthImage = pastFrame->depthImage;
+        pastDepthImage.updateTexture();
+        
+        if (i < 4) {
+            pastImage.draw(i * cameraWidth / 4, cameraHeight / 2, cameraWidth / 4, cameraHeight / 4);
+            pastDepthImage.draw(i * cameraWidth / 4, cameraHeight * 3 / 4, cameraWidth / 4, cameraHeight / 4);
+            
+            i++;
+        }
     }
+    
+    mergedImage.end();
     
     return;
     // merge images
@@ -96,23 +115,57 @@ void ofApp::updateFrames() {
     maskShader.begin();
     maskShader.setUniformTexture("tex0Depth", currentDepthImage.getTexture(), 1);
     
-    maskShader.setUniformTexture("background0", pastImages[0].getTexture(), 2);
-    maskShader.setUniformTexture("background0Depth", pastDepthImages[0].getTexture(), 3);
-    //maskShader.setUniformTexture("background1", pastImages[1].getTexture(), 4);
-    //maskShader.setUniformTexture("background1Depth", pastDepthImages[1].getTexture(), 5);
+    maskShader.setUniformTexture("background0", pastImage.getTexture(), 2);
+    maskShader.setUniformTexture("background0Depth", pastDepthImage.getTexture(), 3);
     
     currentImage.draw(0, 0);
-    
     maskShader.end();
 
     mergedImage.end();
+}
+
+void ofApp::removeOldGhosts() {
+    float currentTime = ofGetElapsedTimef();
+    
+    while (ghostTimestamps.size() && currentTime - ghostTimestamps.front() > maxGhostLifeTime * 2)
+        ghostTimestamps.pop_front();
+}
+
+void ofApp::addNewGhost() {
+    float currentTime = ofGetElapsedTimef();
+    
+    while (lastGhostGeneratedTimestamp + ghostGenerationInterval <= currentTime) {
+        lastGhostGeneratedTimestamp += ghostGenerationInterval;
+        if (currentTime - lastGhostGeneratedTimestamp <= maxGhostLifeTime * 2)
+            ghostTimestamps.push_back(lastGhostGeneratedTimestamp);
+    }
+}
+
+void ofApp::updateGhosts() {
+    float currentTime = ofGetElapsedTimef();
+    
+    if (ghostTimestamps.size()) {
+        auto p = ghostTimestamps.begin();
+        while (p != ghostTimestamps.end()) {
+            *p -= currentTime - timer;
+            p++;
+        }
+        
+        removeOldGhosts();
+    }
+    
+    addNewGhost();
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     if (!cameraFound) return;
     
+    updateGhosts();
+    
     updateFrames();
+    
+    timer = ofGetElapsedTimef();
 }
 
 //--------------------------------------------------------------
@@ -126,12 +179,7 @@ void ofApp::draw(){
     }
     
     // latest frame
-    currentImage.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
-    currentDepthImage.draw(0, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
-    
-    // frame from the past
-    pastImages[0].draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
-    pastDepthImages[0].draw(cameraWidth / 2, cameraHeight / 2, cameraWidth / 2, cameraHeight / 2);
+    mergedImage.draw(0, 0);
     
     
     // diff mask

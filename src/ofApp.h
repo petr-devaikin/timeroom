@@ -5,18 +5,24 @@
 #include "ofxOpenCv.h"
 #include "videoBuffer.hpp"
 
-#define REPEAT_NUMBER 2
-
 class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
+    const float MIN_DISTANCE = 1.;
     const float MAX_DISTANCE = 4.;
     
     videoBuffer buffer;
     
-    float delays[REPEAT_NUMBER] = {60};
-    const int maxNotUsedFrames = 5; // to remove not used frame not one by one
+    list<float> ghostTimestamps;
+    float maxGhostLifeTime = 4;
+    float ghostGenerationInterval = 1;
+    float lastGhostGeneratedTimestamp = 0;
+    
+    void removeOldGhosts();
+    void addNewGhost();
+    
+    void updateGhosts();
     
     // Camera stuff
     bool initCamera();
@@ -29,8 +35,8 @@ private:
     
     ofxCvColorImage currentImage;
     ofxCvGrayscaleImage currentDepthImage;
-    ofxCvColorImage pastImages[REPEAT_NUMBER];
-    ofxCvGrayscaleImage pastDepthImages[REPEAT_NUMBER];
+    ofxCvColorImage pastImage;
+    ofxCvGrayscaleImage pastDepthImage;
     
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
@@ -40,6 +46,8 @@ private:
     ofShader maskShader;
     ofFbo mergedImage;
     ofFbo tempFbo;
+    
+    float timer;
 public:
     ofApp() : buffer(1280, 720, 15) {};
     
