@@ -21,7 +21,7 @@ public:
     rgbdFrame(float timestamp, rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float minDepthValue, float maxDepthValue);
     
     ofPixels depthPixels;
-    ofPixels irPixels;
+    ofPixels colorPixels;
     
     double timestamp;
 };

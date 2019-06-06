@@ -4,7 +4,7 @@
 void ofApp::setup(){
     if (initCamera()) {
         frames = pipe.wait_for_frames();
-        align_to_color = new rs2::align(RS2_STREAM_INFRARED);
+        align_to_color = new rs2::align(RS2_STREAM_COLOR);
     }
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
@@ -61,13 +61,13 @@ void ofApp::updateFrames() {
         
         frames = temp_filter.process(frames);
         frames = hole_filter.process(frames);
-        //frames = align_to_color->process(frames);
+        frames = align_to_color->process(frames);
         
         // !!! need to process all the frames in frameset, not only one
         
         // process last frame
         rs2::depth_frame depthFrame = frames.get_depth_frame();
-        rs2::video_frame rgbFrame = frames.get_infrared_frame();
+        rs2::video_frame rgbFrame = frames.get_color_frame();
         
         rgbdFrame * newFrame = new rgbdFrame(currentTime, rgbFrame, depthFrame, MIN_DISTANCE / cameraDepthScale, MAX_DISTANCE / cameraDepthScale);
         
@@ -77,7 +77,7 @@ void ofApp::updateFrames() {
         ofTexture newLayerTexture;
         ofTexture newLayerDepthTexture;
         
-        newLayerTexture.loadData(newFrame->irPixels);
+        newLayerTexture.loadData(newFrame->colorPixels);
         newLayerDepthTexture.loadData(newFrame->depthPixels);
         
         // init fbo's with current pictures
@@ -100,7 +100,7 @@ void ofApp::updateFrames() {
             
             // get past pictures
             rgbdFrame * pastFrame = buffer.getFrame(g);
-            newLayerTexture.loadData(pastFrame->irPixels);
+            newLayerTexture.loadData(pastFrame->colorPixels);
             newLayerDepthTexture.loadData(pastFrame->depthPixels);
             
             // update result
