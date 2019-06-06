@@ -4,29 +4,27 @@
 #include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
 #include "videoBuffer.hpp"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
-    const float MIN_DISTANCE = 1.;
-    const float MAX_DISTANCE = 4.;
     
     videoBuffer buffer;
     
     list<float> ghostTimestamps;
-    float maxGhostLifeTime = 4;
-    float ghostGenerationInterval = 1;
     float lastGhostGeneratedTimestamp = 0;
     
     void removeOldGhosts();
     void addNewGhost();
-    
     void updateGhosts();
+    
+    void mergeImages();
     
     // Camera stuff
     bool initCamera();
-    void updateFrames(); // get new frames from camera if available;
+    bool updateFrames(); // get new frames from camera if available;
     bool cameraFound;
     float cameraDepthScale; // meters per depth 1
     rs2::pipeline pipe;
@@ -48,6 +46,18 @@ private:
     
     float timer;
     float timeDelta;
+    
+    // GUI
+    void initGui();
+    ofxPanel gui;
+    
+    ofxFloatSlider minDistance;
+    ofxFloatSlider maxDistance;
+    ofxFloatSlider resultScale;
+    ofxVec2Slider resultShift;
+    
+    ofxFloatSlider maxGhostLifeTime;
+    ofxFloatSlider ghostGenerationInterval;
 public:
     ofApp() : buffer(1280, 720, 15) {};
     
@@ -57,4 +67,6 @@ public:
     void exit();
 
     void keyPressed(int key);
+    
+    bool showGui;
 };

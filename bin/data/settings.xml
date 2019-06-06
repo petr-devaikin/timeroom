@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<group>
+	<max_distance>8</max_distance>
+	<scale>0.985</scale>
+	<shift>0, 0</shift>
+	<ghost_lifetime>3.9805</ghost_lifetime>
+	<ghost_interval>0.5085</ghost_interval>
+	<min_distance>1</min_distance>
+</group>
