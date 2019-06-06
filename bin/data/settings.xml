@@ -3,7 +3,7 @@
 	<max_distance>8</max_distance>
 	<scale>0.985</scale>
 	<shift>0, 0</shift>
-	<ghost_lifetime>0.7965</ghost_lifetime>
-	<ghost_interval>0.195</ghost_interval>
+	<ghost_lifetime>0.9955</ghost_lifetime>
+	<ghost_interval>0.366</ghost_interval>
 	<min_distance>1</min_distance>
 </group>
