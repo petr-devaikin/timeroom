@@ -8,12 +8,9 @@ void ofApp::setup(){
     }
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    cout << "2\n";
-    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
-    cout << "3\n";
-    
-    currentImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
-    currentDepthImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
+    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
+    tempDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
     
     maskShader.load("shadersGL3/mask");
     maxShader.load("shadersGL3/max");
@@ -77,44 +74,53 @@ void ofApp::updateFrames() {
         buffer.addFrame(newFrame);  // add to the buffer
         
         // update current view
-        currentImage.loadData(newFrame->irPixels);
-        currentDepthImage.loadData(newFrame->depthPixels);
-    }
-    
-    ofTexture resultTexture;
-    ofTexture resultDepthTexture;
-    ofTexture newLayerTexture;
-    ofTexture newLayerDepthTexture;
-    
-    resultTexture = currentImage;
-    resultDepthTexture = currentDepthImage;
-    
-    // past pictures
-    for (float g : ghostTimestamps) {
-        rgbdFrame * pastFrame = buffer.getFrame(g);
-        newLayerTexture.loadData(pastFrame->irPixels);
-        newLayerDepthTexture.loadData(pastFrame->depthPixels);
+        ofTexture newLayerTexture;
+        ofTexture newLayerDepthTexture;
         
+        newLayerTexture.loadData(newFrame->irPixels);
+        newLayerDepthTexture.loadData(newFrame->depthPixels);
+        
+        // init fbo's with current pictures
         resultFbo.begin();
-        maskShader.begin();
-        maskShader.setUniformTexture("tex1", resultTexture, 2);
-        maskShader.setUniformTexture("tex1Depth", resultDepthTexture, 3);
-        maskShader.setUniformTexture("tex0Depth", newLayerDepthTexture, 1);
         newLayerTexture.draw(0, 0);
-        maskShader.end();
         resultFbo.end();
-        
         resultDepthFbo.begin();
-        maxShader.begin();
-        maskShader.setUniformTexture("tex1", resultDepthTexture, 1);
-        newLayerTexture.draw(0, 0);
-        maxShader.end();
+        newLayerDepthTexture.draw(0, 0);
         resultDepthFbo.end();
-        
-        resultTexture = resultFbo.getTexture();
-        resultDepthTexture = resultDepthFbo.getTexture();
-        
-        break;
+    
+        // past pictures
+        for (float g : ghostTimestamps) {
+            // update temp Fbo's
+            tempFbo.begin();
+            resultFbo.draw(0, 0);
+            tempFbo.end();
+            tempDepthFbo.begin();
+            resultDepthFbo.draw(0, 0);
+            tempDepthFbo.end();
+            
+            // get past pictures
+            rgbdFrame * pastFrame = buffer.getFrame(g);
+            newLayerTexture.loadData(pastFrame->irPixels);
+            newLayerDepthTexture.loadData(pastFrame->depthPixels);
+            
+            // update result
+            resultFbo.begin();
+            maskShader.begin();
+            maskShader.setUniformTexture("tex1", tempFbo.getTexture(), 2);
+            maskShader.setUniformTexture("tex1Depth", tempDepthFbo.getTexture(), 3);
+            maskShader.setUniformTexture("tex0Depth", newLayerDepthTexture, 1);
+            newLayerTexture.draw(0, 0);
+            maskShader.end();
+            resultFbo.end();
+            
+            // update resulting depth
+            resultDepthFbo.begin();
+            maxShader.begin();
+            maxShader.setUniformTexture("tex1", tempDepthFbo.getTexture(), 1);
+            newLayerDepthTexture.draw(0, 0);
+            maxShader.end();
+            resultDepthFbo.end();
+        }
     }
 }
 
@@ -169,7 +175,8 @@ void ofApp::draw(){
     }
     
     // latest frame
-    resultFbo.draw(0, 0);
+    resultFbo.draw(0, 0, cameraWidth / 2, cameraHeight / 2);
+    resultDepthFbo.draw(cameraWidth / 2, 0, cameraWidth / 2, cameraHeight / 2);
     
     
     // diff mask

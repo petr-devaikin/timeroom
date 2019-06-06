@@ -33,9 +33,6 @@ private:
     rs2::frameset frames;
     // End of Camera stuff
     
-    ofTexture currentImage;
-    ofTexture currentDepthImage;
-    
     rs2::temporal_filter temp_filter;
     rs2::hole_filling_filter hole_filter;
     
@@ -45,6 +42,9 @@ private:
     ofShader maxShader;
     ofFbo resultFbo;
     ofFbo resultDepthFbo;
+    
+    ofFbo tempFbo;
+    ofFbo tempDepthFbo;
     
     float timer;
     float timeDelta;
