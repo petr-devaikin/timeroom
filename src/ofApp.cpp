@@ -207,7 +207,7 @@ void ofApp::draw(){
     
     resultFbo.draw(dx, dy, scaledWidth, scaledHeight);
     
-    gui.draw();
+    if (showGui) gui.draw();
 }
 
 //--------------------------------------------------------------
