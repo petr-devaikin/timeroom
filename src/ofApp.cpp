@@ -190,14 +190,6 @@ void ofApp::keyPressed(int key){
         // save scaled depth
         ofSaveImage(scaledDepthImage.getPixels(), filename + "_depth_scaled.png");
         
-        // save original depth
-        for (int x = 0; x < cameraWidth; x++) {
-            for (int y = 0; y < cameraHeight; y++) {
-                pixels.setColor(x, y, ofColor(0, 0, 0));
-                depthImage.getPixels().getData()[2 * (x + y * cameraWidth)];
-            }
-        }
-        
         // save result
         resultFbo.readToPixels(pixels);
         ofSaveImage(pixels, filename + "_result.png");
