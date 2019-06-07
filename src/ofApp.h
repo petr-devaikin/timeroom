@@ -59,7 +59,7 @@ private:
     ofxFloatSlider maxGhostLifeTime;
     ofxFloatSlider ghostGenerationInterval;
 public:
-    ofApp() : buffer(1280, 720, 60) {};
+    ofApp() : buffer(1280, 720, 30) {};
     
     void setup();
     void update();
