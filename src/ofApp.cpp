@@ -33,7 +33,8 @@ void ofApp::setup(){
     gui.setup();
     gui.add(minDepthThreshold.setup("min depth", 1, 0.5, 8));
     gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
-    gui.add(depthStep.setup("depth step", 0.04, 0.01, 0.2));
+    gui.add(depthStep.setup("depth step", 0.04, 0.01, 0.5));
+    gui.loadFromFile("settings.xml");
 }
 
 bool ofApp::initCamera() {
@@ -84,10 +85,10 @@ void ofApp::updateFrames() {
         memcpy(depthImage.getShortPixelsRef().getData(), depthFrame.get_data(), cameraWidth * cameraHeight * 2);
         
         // calc range
-        depthImage.setROI(cameraWidth / 8, cameraHeight / 8, cameraWidth * 6 / 8, cameraHeight * 6 / 8);
+        //depthImage.setROI(cameraWidth / 8, cameraHeight / 8, cameraWidth * 6 / 8, cameraHeight * 6 / 8);
         
         
-        depthImage.resetROI();
+        //depthImage.resetROI();
         //
         
         // scale depth of image
@@ -118,20 +119,21 @@ void ofApp::makeSlice(float minDepth, float maxDepth) {
     tempImage1 -= tempImage2;
     
     sliceFbo.begin();;
-    outlineShader.begin();
+    //outlineShader.begin();
     tempImage1.draw(0, 0);
-    outlineShader.end();
+    //outlineShader.end();
     sliceFbo.end();
 }
 
-void ofApp::drawLevel(float minDepth, float maxDepth) {
+void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
     // draw lines at depth level = depth
     makeSlice(minDepth, maxDepth);
     
     resultFbo.begin();
     
-    ofEnableBlendMode(OF_BLENDMODE_MULTIPLY);
+    ofEnableBlendMode(OF_BLENDMODE_ADD);
     
+    ofSetColor(255 * position, 255 * (1 - position), 0);
     sliceFbo.draw(0, 0);
     
     resultFbo.end();
@@ -145,14 +147,16 @@ void ofApp::update(){
     
     // clean image
     resultFbo.begin();
-    ofClear(255, 255, 255, 255);
+    ofClear(0);
     resultFbo.end();
     
-    // update currentPosition;
+    // iterate through slices
     float currentPosition = minDepthThreshold;
+    float stepNumber = floor((maxDepthThreshold - minDepthThreshold) / depthStep);
+    int i = 0;
     while (currentPosition < maxDepthThreshold) {
         // draw lines at currentPosition
-        drawLevel(currentPosition, currentPosition + depthStep);
+        drawLevel(currentPosition, currentPosition + depthStep, i++ / stepNumber);
         currentPosition += depthStep;
     }
 }
@@ -167,7 +171,7 @@ void ofApp::draw(){
         return;
     }
     
-    resultFbo.draw(0, 0);
+    resultFbo.draw(0, 0, cameraWidth, cameraHeight);
     
     gui.draw();
 }
@@ -181,16 +185,28 @@ void ofApp::keyPressed(int key){
         dir.create();
         
         ofPixels pixels;
-        pixels.allocate(cameraWidth, cameraHeight, GL_RGBA);
+        pixels.allocate(cameraWidth, cameraHeight, GL_RGB);
+        
+        // save scaled depth
+        ofSaveImage(scaledDepthImage.getPixels(), filename + "_depth_scaled.png");
+        
+        // save original depth
+        for (int x = 0; x < cameraWidth; x++) {
+            for (int y = 0; y < cameraHeight; y++) {
+                pixels.setColor(x, y, ofColor(0, 0, 0));
+                depthImage.getPixels().getData()[2 * (x + y * cameraWidth)];
+            }
+        }
+        
+        // save result
         resultFbo.readToPixels(pixels);
+        ofSaveImage(pixels, filename + "_result.png");
         
-        ofSaveImage(pixels, filename + ".jpg", OF_IMAGE_QUALITY_BEST);
-        
+        // save individual slices
         float currentPosition = minDepthThreshold;
         int i = 0;
         while (currentPosition < maxDepthThreshold) {
             // draw lines at currentPosition
-            drawLevel(currentPosition, currentPosition + depthStep);
             currentPosition += depthStep;
             
             char buff[100];
@@ -199,7 +215,7 @@ void ofApp::keyPressed(int key){
             
             makeSlice(currentPosition, currentPosition + depthStep);
             sliceFbo.readToPixels(pixels);
-            ofSaveImage(pixels, filename + "/" + buffAsStdStr + ".jpg", OF_IMAGE_QUALITY_BEST);
+            ofSaveImage(pixels, filename + "/" + buffAsStdStr + ".png");
             
             i++;
         }
@@ -210,4 +226,6 @@ void ofApp::exit(){
     if (cameraFound) {
         pipe.stop();
     }
+    
+    gui.saveToFile("settings.xml");
 }

@@ -36,7 +36,7 @@ private:
     void makeSlice(float minDepth, float maxDepth);
     ofFbo sliceFbo;
     
-    void drawLevel(float minDepth, float maxDepth);
+    void drawLevel(float minDepth, float maxDepth, float position);
     
     ofxFloatSlider minDepthThreshold;
     ofxFloatSlider maxDepthThreshold;
