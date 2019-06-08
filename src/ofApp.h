@@ -45,8 +45,8 @@ private:
     ofxFloatSlider polylineTolerance;
     ofxPanel gui;
     
-    bool simplify = true;
-    bool subtractPrevious = false;
+    bool simplify = false;
+    bool subtractPrevious = true;
 public:
     void setup();
     void update();

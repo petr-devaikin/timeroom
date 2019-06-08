@@ -143,6 +143,7 @@ void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
     //ofEnableBlendMode(OF_BLENDMODE_ADD);
     
     if (simplify) {
+        ofEnableBlendMode(OF_BLENDMODE_ALPHA);
         ofSetColor(255);
         ofPath path = calculatePolygon(makeSlice(minDepth, maxDepth));
         path.setColor(ofColor(255 * position, 255 * (1 - position), 0, 200));
@@ -151,6 +152,9 @@ void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
         path.draw();
     }
     else {
+        cout << position << "\n";
+        ofEnableBlendMode(OF_BLENDMODE_ADD);
+        ofSetColor(255 * position, 255 * (1 - position), 0);
         makeSlice(minDepth, maxDepth).draw(0, 0);
     }
     
