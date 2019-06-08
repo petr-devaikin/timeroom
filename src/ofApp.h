@@ -26,21 +26,23 @@ private:
     ofxCvShortImage depthImage;
     ofxCvGrayscaleImage scaledDepthImage;
     
-    ofxCvGrayscaleImage tempImage1;
-    ofxCvGrayscaleImage tempImage2;
-    
     ofShader outlineShader;
     ofShader fadeOutShader;
     ofFbo resultFbo;
     
-    void makeSlice(float minDepth, float maxDepth);
-    ofFbo sliceFbo;
+    ofxCvGrayscaleImage& makeSlice(float minDepth, float maxDepth);
+    ofxCvGrayscaleImage lastSlice;
+    ofxCvGrayscaleImage tempImage1;
+    ofPath calculatePolygon(ofxCvGrayscaleImage& slice);
+    ofxCvContourFinder contourFinder;
     
     void drawLevel(float minDepth, float maxDepth, float position);
     
     ofxFloatSlider minDepthThreshold;
     ofxFloatSlider maxDepthThreshold;
     ofxFloatSlider depthStep;
+    ofxIntSlider minPolygonSize;
+    ofxFloatSlider polylineTolerance;
     ofxPanel gui;
 public:
     void setup();

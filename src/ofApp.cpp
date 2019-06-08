@@ -17,11 +17,10 @@ void ofApp::setup(){
     //scaledDepthImage.setUseTexture(false);
     scaledDepthImage.allocate(cameraWidth, cameraHeight);
     
+    lastSlice.allocate(cameraWidth, cameraHeight);
     tempImage1.allocate(cameraWidth, cameraHeight);
-    tempImage2.allocate(cameraWidth, cameraHeight);
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
-    sliceFbo.allocate(cameraWidth, cameraHeight, GL_RGBA);
     
     // clear result
     
@@ -34,6 +33,8 @@ void ofApp::setup(){
     gui.add(minDepthThreshold.setup("min depth", 1, 0.5, 8));
     gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
     gui.add(depthStep.setup("depth step", 0.04, 0.01, 0.5));
+    gui.add(minPolygonSize.setup("min polygon size", 10, 0, 50));
+    gui.add(polylineTolerance.setup("polygon tolerance", 0.3, 0, 2));
     gui.loadFromFile("settings.xml");
 }
 
@@ -107,34 +108,45 @@ void ofApp::updateFrames() {
     }
 }
 
-void ofApp::makeSlice(float minDepth, float maxDepth) {
+ofxCvGrayscaleImage& ofApp::makeSlice(float minDepth, float maxDepth) {
     float maxDepthPoints = 255 * (maxDepth - minDepthThreshold) / (maxDepthThreshold - minDepthThreshold);
     float minDepthPoints = 255 * (minDepth - minDepthThreshold) / (maxDepthThreshold - minDepthThreshold);
     
+    lastSlice = scaledDepthImage;
+    lastSlice.threshold(minDepthPoints);
     tempImage1 = scaledDepthImage;
-    tempImage1.threshold(minDepthPoints);
-    tempImage2 = scaledDepthImage;
-    tempImage2.threshold(maxDepthPoints);
+    tempImage1.threshold(maxDepthPoints);
     
-    tempImage1 -= tempImage2;
+    lastSlice -= tempImage1;
     
-    sliceFbo.begin();;
-    //outlineShader.begin();
-    tempImage1.draw(0, 0);
-    //outlineShader.end();
-    sliceFbo.end();
+    return lastSlice;
+}
+
+ofPath ofApp::calculatePolygon(ofxCvGrayscaleImage& slice) {
+    contourFinder.findContours(slice, minPolygonSize, cameraWidth * cameraHeight, 1000, true);
+    
+    ofPath result;
+    for (ofxCvBlob b : contourFinder.blobs) {
+        result.moveTo(b.pts[0]);
+        for (int i = 1; i < b.nPts; i++) result.lineTo(b.pts[i]);
+        result.close();
+    }
+    result.simplify(polylineTolerance);
+    return result;
 }
 
 void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
     // draw lines at depth level = depth
-    makeSlice(minDepth, maxDepth);
-    
     resultFbo.begin();
     
     ofEnableBlendMode(OF_BLENDMODE_ADD);
     
-    ofSetColor(255 * position, 255 * (1 - position), 0);
-    sliceFbo.draw(0, 0);
+    //ofSetColor(255 * position, 255 * (1 - position), 0);
+    ofSetColor(255);
+    ofPath path = calculatePolygon(makeSlice(minDepth, maxDepth));
+    path.setColor(ofColor(255 * position, 255 * (1 - position), 0));
+    path.draw();
+    //makeSlice(minDepth, maxDepth).draw(0, 0);
     
     resultFbo.end();
 }
@@ -205,9 +217,7 @@ void ofApp::keyPressed(int key){
             snprintf(buff, sizeof(buff), "%03d", i);
             string buffAsStdStr = buff;
             
-            makeSlice(currentPosition, currentPosition + depthStep);
-            sliceFbo.readToPixels(pixels);
-            ofSaveImage(pixels, filename + "/" + buffAsStdStr + ".png");
+            ofSaveImage(makeSlice(currentPosition, currentPosition + depthStep).getPixels(), filename + "/" + buffAsStdStr + ".png");
             
             i++;
         }
