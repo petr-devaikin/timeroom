@@ -34,7 +34,7 @@ void ofApp::setup(){
     gui.add(maxDepthThreshold.setup("max depth", 3, 1, 8));
     gui.add(depthStep.setup("depth step", 0.04, 0.01, 0.5));
     gui.add(minPolygonSize.setup("min polygon size", 10, 0, 50));
-    gui.add(polylineTolerance.setup("polygon tolerance", 0.3, 0, 2));
+    gui.add(polylineTolerance.setup("polygon tolerance", 0.3, 0, 100));
     gui.loadFromFile("settings.xml");
 }
 
@@ -139,14 +139,19 @@ void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
     // draw lines at depth level = depth
     resultFbo.begin();
     
-    ofEnableBlendMode(OF_BLENDMODE_ADD);
+    //ofEnableBlendMode(OF_BLENDMODE_ADD);
     
-    //ofSetColor(255 * position, 255 * (1 - position), 0);
-    ofSetColor(255);
-    ofPath path = calculatePolygon(makeSlice(minDepth, maxDepth));
-    path.setColor(ofColor(255 * position, 255 * (1 - position), 0));
-    path.draw();
-    //makeSlice(minDepth, maxDepth).draw(0, 0);
+    if (simplify) {
+        ofSetColor(255);
+        ofPath path = calculatePolygon(makeSlice(minDepth, maxDepth));
+        path.setColor(ofColor(255 * position, 255 * (1 - position), 0, 200));
+        //path.setStrokeWidth(1);
+        //path.setFilled(false);
+        path.draw();
+    }
+    else {
+        makeSlice(minDepth, maxDepth).draw(0, 0);
+    }
     
     resultFbo.end();
 }

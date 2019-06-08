@@ -44,6 +44,8 @@ private:
     ofxIntSlider minPolygonSize;
     ofxFloatSlider polylineTolerance;
     ofxPanel gui;
+    
+    bool simplify = true;
 public:
     void setup();
     void update();

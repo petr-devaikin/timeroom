@@ -2,7 +2,7 @@
 <group>
 	<min_depth>0.8375</min_depth>
 	<max_depth>4.745</max_depth>
-	<depth_step>0.17905</depth_step>
-	<min_polygon_size>1</min_polygon_size>
-	<polygon_tolerance>0.38</polygon_tolerance>
+	<depth_step>0.108</depth_step>
+	<min_polygon_size>6</min_polygon_size>
+	<polygon_tolerance>13.5</polygon_tolerance>
 </group>
