@@ -46,6 +46,7 @@ private:
     ofxPanel gui;
     
     bool simplify = true;
+    bool subtractPrevious = false;
 public:
     void setup();
     void update();

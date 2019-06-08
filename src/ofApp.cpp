@@ -114,10 +114,11 @@ ofxCvGrayscaleImage& ofApp::makeSlice(float minDepth, float maxDepth) {
     
     lastSlice = scaledDepthImage;
     lastSlice.threshold(minDepthPoints);
-    tempImage1 = scaledDepthImage;
-    tempImage1.threshold(maxDepthPoints);
-    
-    lastSlice -= tempImage1;
+    if (subtractPrevious) {
+        tempImage1 = scaledDepthImage;
+        tempImage1.threshold(maxDepthPoints);
+        lastSlice -= tempImage1;
+    }
     
     return lastSlice;
 }
