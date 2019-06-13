@@ -2,9 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    if (initCamera()) {
-        frames = pipe.wait_for_frames();
-    }
+    initCamera();
     
     // shaders
     outlineShader.load("shadersGL3/outline");
@@ -39,63 +37,28 @@ void ofApp::setup(){
 }
 
 bool ofApp::initCamera() {
-    cout << "Looking for RealSense\n";
-    rs2::config cfg;
-    cfg.enable_stream(RS2_STREAM_DEPTH, cameraWidth, cameraHeight);
-    cfg.enable_stream(RS2_STREAM_COLOR, cameraWidth, cameraHeight);
-    rs2::context ctx;
-    auto device_list = ctx.query_devices();
-    
-    if (device_list.size() > 0) {
-        rs2::pipeline_profile profile = pipe.start(cfg);
-        auto depth_sensor = profile.get_device().first<rs2::depth_sensor>();
-        
-        // depth sensor settings
-        // !!!! set more precise
-        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
-        //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
-        //depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
-        
-        cameraDepthScale = depth_sensor.get_depth_scale();
-        
-        cout << "RealSense found!\n";
-        
+    ofLogNotice("Looking for RealSense");
+    if (realSense.setup()) {
+        ofLogNotice("RealSense connected");
         cameraFound = true;
+        realSense.start();
+        ofLogNotice("RealSense started");
         return true;
     }
     else {
-        cout << "Camera not found!\n";
-        
-        cameraFound = false;
+        ofLogNotice("RealSense not found");
         return false;
     }
 }
 
-void ofApp::updateFrames() {
-    rs2::frameset newFrames;
-    if (pipe.poll_for_frames(&newFrames)) {
-        frames = newFrames;
-        
-        frames = temp_filter.process(frames);
-        frames = hole_filter.process(frames);
-        
-        // !!! need to process all the frames in frameset, not only one
-        
-        // process last frame
-        rs2::depth_frame depthFrame = frames.get_depth_frame();
-        memcpy(depthImage.getShortPixelsRef().getData(), depthFrame.get_data(), cameraWidth * cameraHeight * 2);
-        
-        // calc range
-        //depthImage.setROI(cameraWidth / 8, cameraHeight / 8, cameraWidth * 6 / 8, cameraHeight * 6 / 8);
-        
-        
-        //depthImage.resetROI();
-        //
+void ofApp::updateImages() {
+    if (realSense.hasNewFrames()) {
+        depthImage.getShortPixelsRef() = realSense.getDepthPixels();
         
         // scale depth of image
         
-        float minDepthPoints = minDepthThreshold / cameraDepthScale;
-        float maxDepthPoints = maxDepthThreshold / cameraDepthScale;
+        float minDepthPoints = minDepthThreshold / realSense.getDepthScale();
+        float maxDepthPoints = maxDepthThreshold / realSense.getDepthScale();
         
         float newMinPoints = minDepthPoints * 65535. / (maxDepthPoints - minDepthPoints);
         float newMaxPoints = minDepthPoints + 65535. * 65535. / (maxDepthPoints - minDepthPoints);
@@ -104,7 +67,6 @@ void ofApp::updateFrames() {
         
         // transform to greyscale
         scaledDepthImage = depthImage;
-        
     }
 }
 
@@ -165,7 +127,8 @@ void ofApp::drawLevel(float minDepth, float maxDepth, float position) {
 void ofApp::update(){
     if (!cameraFound) return;
     
-    updateFrames();
+    realSense.update();
+    updateImages();
     
     // clean image
     resultFbo.begin();
@@ -193,7 +156,8 @@ void ofApp::draw(){
         return;
     }
     
-    resultFbo.draw(0, 0, cameraWidth, cameraHeight);
+    scaledDepthImage.draw(0, 0);
+    //resultFbo.draw(0, 0, cameraWidth, cameraHeight);
     
     gui.draw();
 }
@@ -236,7 +200,7 @@ void ofApp::keyPressed(int key){
 
 void ofApp::exit(){
     if (cameraFound) {
-        pipe.stop();
+        realSense.stop();
     }
     
     gui.saveToFile("settings.xml");

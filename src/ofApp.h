@@ -1,10 +1,9 @@
 #pragma once
 
 #include "ofMain.h"
-#include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
-#include "rgbdFrame.hpp"
 #include "ofxGui.h"
+#include "ofxRealSense2.hpp"
 
 class ofApp : public ofBaseApp{
 private:
@@ -12,17 +11,12 @@ private:
     const int cameraHeight = 720;
     
     // Camera stuff
+    ofxRealSense2 realSense;
     bool initCamera();
-    void updateFrames(); // get new frames from camera if available;
     bool cameraFound;
-    float cameraDepthScale; // meters per depth 1
-    rs2::pipeline pipe;
-    rs2::frameset frames;
-    
-    rs2::temporal_filter temp_filter;
-    rs2::hole_filling_filter hole_filter;
     // End of Camera stuff
     
+    void updateImages(); // get new frames from camera if available;
     ofxCvShortImage depthImage;
     ofxCvGrayscaleImage scaledDepthImage;
     

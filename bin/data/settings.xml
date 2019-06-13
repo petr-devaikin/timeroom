@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <group>
-	<min_depth>0.8375</min_depth>
-	<max_depth>3.94</max_depth>
+	<min_depth>1.8875</min_depth>
+	<max_depth>4.36</max_depth>
 	<depth_step>0.0688</depth_step>
 	<min_polygon_size>6</min_polygon_size>
 	<polygon_tolerance>17.5</polygon_tolerance>
