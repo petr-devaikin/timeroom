@@ -5,9 +5,12 @@ void ofApp::setup(){
     initCamera();
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    tempDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
+    cout << "2\n";
+    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    cout << "3\n";
+    
+    currentImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    currentDepthImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
     
     maskShader.load("shadersGL3/mask");
     maxShader.load("shadersGL3/max");
@@ -58,7 +61,49 @@ bool ofApp::getNewFrames() {
         
         buffer.addFrame(newFrame);  // add to the buffer
         
+<<<<<<< HEAD
         return true;
+=======
+        // update current view
+        currentImage.loadData(newFrame->irPixels);
+        currentDepthImage.loadData(newFrame->depthPixels);
+    }
+    
+    ofTexture resultTexture;
+    ofTexture resultDepthTexture;
+    ofTexture newLayerTexture;
+    ofTexture newLayerDepthTexture;
+    
+    resultTexture = currentImage;
+    resultDepthTexture = currentDepthImage;
+    
+    // past pictures
+    for (float g : ghostTimestamps) {
+        rgbdFrame * pastFrame = buffer.getFrame(g);
+        newLayerTexture.loadData(pastFrame->irPixels);
+        newLayerDepthTexture.loadData(pastFrame->depthPixels);
+        
+        resultFbo.begin();
+        maskShader.begin();
+        maskShader.setUniformTexture("tex1", resultTexture, 2);
+        maskShader.setUniformTexture("tex1Depth", resultDepthTexture, 3);
+        maskShader.setUniformTexture("tex0Depth", newLayerDepthTexture, 1);
+        newLayerTexture.draw(0, 0);
+        maskShader.end();
+        resultFbo.end();
+        
+        resultDepthFbo.begin();
+        maxShader.begin();
+        maskShader.setUniformTexture("tex1", resultDepthTexture, 1);
+        newLayerTexture.draw(0, 0);
+        maxShader.end();
+        resultDepthFbo.end();
+        
+        resultTexture = resultFbo.getTexture();
+        resultDepthTexture = resultDepthFbo.getTexture();
+        
+        break;
+>>>>>>> parent of 6a71f49... working!
     }
     else
         return false;
@@ -170,10 +215,14 @@ void ofApp::draw(){
     }
     
     // latest frame
+<<<<<<< HEAD
     float dx = ofGetWindowWidth() / 2 + resultShift->x - cameraWidth * resultScale / 2;
     float dy = ofGetWindowHeight() / 2 + resultShift->y - cameraHeight * resultScale / 2;
     float scaledWidth = cameraWidth * resultScale;
     float scaledHeight = cameraHeight * resultScale;
+=======
+    resultFbo.draw(0, 0);
+>>>>>>> parent of 6a71f49... working!
     
     resultFbo.draw(dx, dy, scaledWidth, scaledHeight);
     
