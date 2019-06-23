@@ -2,10 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    if (initCamera()) {
-        frames = pipe.wait_for_frames();
-        align_to_color = new rs2::align(RS2_STREAM_COLOR);
-    }
+    initCamera();
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
     resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
@@ -36,57 +33,28 @@ void ofApp::initGui() {
 }
 
 bool ofApp::initCamera() {
-    cout << "Looking for RealSense\n";
-    rs2::config cfg;
-    cfg.enable_stream(RS2_STREAM_COLOR, cameraWidth, cameraHeight);
-    cfg.enable_stream(RS2_STREAM_DEPTH, cameraWidth, cameraHeight);
-    cfg.enable_stream(RS2_STREAM_INFRARED, cameraWidth, cameraHeight, RS2_FORMAT_Y8);
+    ofLogNotice("Looking for RealSense");
     
-    rs2::context ctx;
-    auto device_list = ctx.query_devices();
-    
-    if (device_list.size() > 0) {
-        rs2::pipeline_profile profile = pipe.start(cfg);
-        auto depth_sensor = profile.get_device().first<rs2::depth_sensor>();
-        
-        // depth sensor settings
-        depth_sensor.set_option(RS2_OPTION_VISUAL_PRESET, RS2_RS400_VISUAL_PRESET_DEFAULT);
-        //depth_sensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0.f);
-        //depth_sensor.set_option(RS2_OPTION_EXPOSURE, 30000);
-        
-        cameraDepthScale = depth_sensor.get_depth_scale();
-        
-        cout << "RealSense found!\n";
-        
+    if (realSense.setup()) {
+        ofLogNotice("RealSense found");
         cameraFound = true;
+        
+        realSense.start();
+        
         return true;
     }
     else {
-        cout << "Camera not found!\n";
-        
+        ofLogError("RealSense not found");
         cameraFound = false;
+        
         return false;
     }
 }
 
-bool ofApp::updateFrames() {
+bool ofApp::getNewFrames() {
     float currentTime = ofGetElapsedTimef();
     
-    rs2::frameset newFrames;
-    if (pipe.poll_for_frames(&newFrames)) {
-        frames = newFrames;
-        
-        frames = temp_filter.process(frames);
-        frames = hole_filter.process(frames);
-        frames = align_to_color->process(frames);
-        
-        // !!! need to process all the frames in frameset, not only one
-        
-        // process last frame
-        rs2::depth_frame depthFrame = frames.get_depth_frame();
-        rs2::video_frame rgbFrame = frames.get_color_frame();
-        
-        rgbdFrame * newFrame = new rgbdFrame(currentTime, rgbFrame, depthFrame, minDistance / cameraDepthScale, maxDistance / cameraDepthScale);
+    if (realSense.hasNewFrames()) {rgbdFrame * newFrame = new rgbdFrame(currentTime, realSense.getColorPixels(), realSense.getDepthPixels(), minDistance / realSense.getDepthScale(), maxDistance / realSense.getDepthScale());
         
         buffer.addFrame(newFrame);  // add to the buffer
         
@@ -180,12 +148,14 @@ void ofApp::mergeImages() {
 void ofApp::update(){
     if (!cameraFound) return;
     
+    realSense.update();
+    
     float newTimer = ofGetElapsedTimef();
     timeDelta = newTimer - timer;
     timer = newTimer;
     
     updateGhosts();
-    if (updateFrames())
+    if (getNewFrames())
         mergeImages();
 }
 
@@ -217,8 +187,7 @@ void ofApp::keyPressed(int key){
 
 void ofApp::exit(){
     if (cameraFound) {
-        pipe.stop();
-        delete align_to_color;
+        realSense.stop();
     }
     gui.saveToFile("settings.xml");
 }

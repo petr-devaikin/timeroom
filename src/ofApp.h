@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "../librealsense2/rs.hpp"
+#include "ofxRealSense2.hpp"
 #include "ofxOpenCv.h"
 #include "videoBuffer.hpp"
 #include "ofxGui.h"
@@ -12,6 +12,7 @@ private:
     const int cameraHeight = 720;
     
     videoBuffer buffer;
+    bool getNewFrames(); // get new frames from camera if available;
     
     list<float> ghostTimestamps;
     float lastGhostGeneratedTimestamp = 0;
@@ -23,26 +24,19 @@ private:
     void mergeImages();
     
     // Camera stuff
+    ofxRealSense2 realSense;
     bool initCamera();
-    bool updateFrames(); // get new frames from camera if available;
     bool cameraFound;
-    float cameraDepthScale; // meters per depth 1
-    rs2::pipeline pipe;
-    rs2::frameset frames;
     // End of Camera stuff
-    
-    rs2::temporal_filter temp_filter;
-    rs2::hole_filling_filter hole_filter;
-    
-    rs2::align * align_to_color;
     
     ofShader maskShader;
     ofShader maxShader;
+    
     ofFbo resultFbo;
     ofFbo resultDepthFbo;
-    
     ofFbo tempFbo;
     ofFbo tempDepthFbo;
+    
     
     float timer;
     float timeDelta;

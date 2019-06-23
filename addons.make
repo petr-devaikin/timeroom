@@ -1,4 +1,4 @@
 ofxCv
 ofxGui
 ofxOpenCv
-ofxVideoRecorder
+ofxRealSense2

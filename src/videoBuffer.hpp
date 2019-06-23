@@ -10,7 +10,6 @@
 
 #include "rgbdFrame.hpp"
 #include "ofMain.h"
-#include "ofxVideoRecorder.h"
 
 #define MAX_FPS 60
 

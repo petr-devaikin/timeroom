@@ -8,7 +8,6 @@
 #ifndef rgbdFrame_hpp
 #define rgbdFrame_hpp
 
-#include "../librealsense2/rs.hpp"
 #include "ofxOpenCv.h"
 #include "ofMain.h"
 
@@ -18,9 +17,9 @@ private:
     int height;
 public:
     rgbdFrame(int width, int height);
-    rgbdFrame(float timestamp, rs2::video_frame videoFrame, rs2::depth_frame depthFrame, float minDepthValue, float maxDepthValue);
+    rgbdFrame(float timestamp, ofPixels& videoPixels, ofShortPixels& depthPixels, float minDepthValue, float maxDepthValue);
     
-    ofPixels depthPixels;
+    ofShortPixels depthPixels;
     ofPixels colorPixels;
     
     double timestamp;
