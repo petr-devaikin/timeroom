@@ -99,13 +99,12 @@ void ofApp::mergeImages() {
     
     // init fbo's with current pictures
     resultFbo.begin();
-    ofDrawRectangle(0, 0, 300, 300);
+    ofSetColor(255, 255, 255);
     newLayerTexture.draw(0, 0);
     resultFbo.end();
     resultDepthFbo.begin();
     newLayerDepthTexture.draw(0, 0);
     resultDepthFbo.end();
-    return;
     
     // past pictures
     for (float g : ghostTimestamps) {
@@ -169,13 +168,11 @@ void ofApp::draw(){
     // draw result
     ofPushMatrix();
     
-    
     ofTranslate(ofGetWindowWidth() / 2 + resultShift->x, ofGetWindowHeight() / 2 + resultShift->y);
     ofScale(resultScale);
     ofTranslate(-cameraWidth / 2, -cameraHeight / 2);
     
     resultFbo.draw(0, 0, cameraWidth, cameraHeight);
-    ofDrawRectangle(0, 0, cameraWidth, cameraHeight);
     
     ofPopMatrix();
     
