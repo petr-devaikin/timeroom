@@ -22,6 +22,7 @@
 		63020F16C7E8DED980111241 /* ofxCvImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C6151136D101F857DAE12722 /* ofxCvImage.cpp */; };
 		6AABAB39E82AF5CFEA23A205 /* ContourFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */; };
 		6F35F1D322CF892B0039BE19 /* cameraFilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F35F1D122CF892B0039BE19 /* cameraFilter.cpp */; };
+		6FB05BD122CF8BC0002E788D /* ghostMaker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FB05BCF22CF8BC0002E788D /* ghostMaker.cpp */; };
 		7CDAD32BE4FA46701E3552C7 /* RunningBackground.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */; };
 		837220E80EB56CD44AD27F2A /* ofxSlider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 15F2C6477A769C03A56D1401 /* ofxSlider.cpp */; };
 		852E0891794923EE7583C621 /* ofxInputField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 44B351490B620D04E1E7C52D /* ofxInputField.cpp */; };
@@ -227,6 +228,8 @@
 		6EF5548EEA5A855DAA35C873 /* cudafilters.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudafilters.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudafilters.hpp; sourceTree = SOURCE_ROOT; };
 		6F35F1D122CF892B0039BE19 /* cameraFilter.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cameraFilter.cpp; sourceTree = "<group>"; };
 		6F35F1D222CF892B0039BE19 /* cameraFilter.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cameraFilter.hpp; sourceTree = "<group>"; };
+		6FB05BCF22CF8BC0002E788D /* ghostMaker.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ghostMaker.cpp; sourceTree = "<group>"; };
+		6FB05BD022CF8BC0002E788D /* ghostMaker.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ghostMaker.hpp; sourceTree = "<group>"; };
 		70046E043EDDB466ED625C3B /* Tracker.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Tracker.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h; sourceTree = SOURCE_ROOT; };
 		7027C12438FC53D4C51FA06F /* cudawarping.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudawarping.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudawarping.hpp; sourceTree = SOURCE_ROOT; };
 		704DCFE42516C774B24026C6 /* utility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = utility.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/utility.hpp; sourceTree = SOURCE_ROOT; };
@@ -1153,6 +1156,8 @@
 			children = (
 				6F35F1D122CF892B0039BE19 /* cameraFilter.cpp */,
 				6F35F1D222CF892B0039BE19 /* cameraFilter.hpp */,
+				6FB05BCF22CF8BC0002E788D /* ghostMaker.cpp */,
+				6FB05BD022CF8BC0002E788D /* ghostMaker.hpp */,
 			);
 			path = cameraFilter;
 			sourceTree = "<group>";
@@ -2081,6 +2086,7 @@
 			files = (
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
+				6FB05BD122CF8BC0002E788D /* ghostMaker.cpp in Sources */,
 				FEE441A754253E44194633A4 /* videoBuffer.cpp in Sources */,
 				08BB013056D3158860826CD4 /* rgbdFrame.cpp in Sources */,
 				B6840996567E78436F7ECFAB /* ETF.cpp in Sources */,

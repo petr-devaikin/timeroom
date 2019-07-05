@@ -11,7 +11,7 @@
 #include <ofxRealSense2.hpp>
 
 class cameraFilter {
-private:
+protected:
     ofxRealSense2 * realSense;
 public:
     cameraFilter(ofxRealSense2 * realSense);

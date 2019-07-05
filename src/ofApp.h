@@ -5,42 +5,19 @@
 #include "ofxOpenCv.h"
 #include "videoBuffer.hpp"
 #include "ofxGui.h"
+#include "cameraFilter/cameraFilter.hpp"
 
 class ofApp : public ofBaseApp{
 private:
     const int cameraWidth = 1280;
     const int cameraHeight = 720;
     
-    videoBuffer buffer;
     bool getNewFrames(); // get new frames from camera if available;
-    
-    list<float> ghostTimestamps;
-    float lastGhostGeneratedTimestamp = 0;
-    
-    void removeOldGhosts();
-    void addNewGhost();
-    void updateGhosts();
-    
-    void mergeImages();
     
     // Camera stuff
     ofxRealSense2 realSense;
     bool initCamera();
     // End of Camera stuff
-    
-    rs2::temporal_filter temp_filter;
-    rs2::hole_filling_filter hole_filter;
-    
-    rs2::align * align_to_color;
-    
-    ofShader maskShader;
-    ofShader maxShader;
-    
-    ofFbo resultFbo;
-    ofFbo resultDepthFbo;
-    
-    ofFbo tempFbo;
-    ofFbo tempDepthFbo;
     
     float timer;
     float timeDelta;
@@ -53,11 +30,8 @@ private:
     ofxFloatSlider maxDistance;
     ofxFloatSlider resultScale;
     ofxVec2Slider resultShift;
-    
-    ofxFloatSlider maxGhostLifeTime;
-    ofxFloatSlider ghostGenerationInterval;
 public:
-    ofApp() : buffer(1280, 720, 30) {};
+    ofApp() {};
     
     void setup();
     void update();
