@@ -59,3 +59,12 @@ rgbdFrame * videoBuffer::getFrame(float timestamp) {
         return * next(frames.begin(), position);
     }
 }
+
+rgbdFrame * videoBuffer::getLastFrame() {
+    if (frames.size() == 0) {
+        //ofLogWarning("Trying to get a frame while no frames added");
+        return emptyFrame;
+    }
+    else
+        return frames.back();
+}

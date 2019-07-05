@@ -14,8 +14,8 @@ rgbdFrame::rgbdFrame(int width, int height) {
     depthPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
     memset(depthPixels.getData(), 255, width * height);
     
-    colorPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
-    memset(colorPixels.getData(), 0, width * height);
+    videoPixels.allocate(width, height, OF_IMAGE_GRAYSCALE);
+    memset(videoPixels.getData(), 0, width * height);
 }
 
 
@@ -27,9 +27,8 @@ rgbdFrame::rgbdFrame(float timestamp, ofPixels &videoPixels, ofShortPixels& dept
     // allocate images
     
     // ir pixels
-    colorPixels.allocate(width, height, videoPixels.getNumChannels());
-        colorPixels.allocate(width, height, OF_IMAGE_COLOR);
-    colorPixels = videoPixels;
+    this->videoPixels.allocate(width, height, videoPixels.getNumChannels());
+    this->videoPixels = videoPixels;
     
     // depth pixels
     ofxCvShortImage depthRawImage; // temporal image before scaling
@@ -50,6 +49,6 @@ rgbdFrame::rgbdFrame(float timestamp, ofPixels &videoPixels, ofShortPixels& dept
     depthRawImage.convertToRange(-newMinPoints, newMaxPoints);
     depthConvertedImage = depthRawImage;
     
-    depthPixels.allocate(width, height, 1);
-    depthPixels = depthConvertedImage.getPixels();
+    this->depthPixels.allocate(width, height, 1);
+    this->depthPixels = depthConvertedImage.getPixels();
 }

@@ -5,12 +5,10 @@ void ofApp::setup(){
     initCamera();
     
     resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    cout << "2\n";
-    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
-    cout << "3\n";
+    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
     
-    currentImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
-    currentDepthImage.allocate(cameraWidth, cameraHeight, GL_LUMINANCE);
+    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
+    tempDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
     
     maskShader.load("shadersGL3/mask");
     maxShader.load("shadersGL3/max");
@@ -40,16 +38,11 @@ bool ofApp::initCamera() {
     
     if (realSense.setup()) {
         ofLogNotice("RealSense found");
-        cameraFound = true;
-        
         realSense.start();
         
         return true;
     }
     else {
-        ofLogError("RealSense not found");
-        cameraFound = false;
-        
         return false;
     }
 }
@@ -57,53 +50,12 @@ bool ofApp::initCamera() {
 bool ofApp::getNewFrames() {
     float currentTime = ofGetElapsedTimef();
     
-    if (realSense.hasNewFrames()) {rgbdFrame * newFrame = new rgbdFrame(currentTime, realSense.getColorPixels(), realSense.getDepthPixels(), minDistance / realSense.getDepthScale(), maxDistance / realSense.getDepthScale());
+    if (realSense.hasNewFrames()) {
+        rgbdFrame * newFrame = new rgbdFrame(currentTime, realSense.getColorPixels(), realSense.getDepthPixels(), minDistance / realSense.getDepthScale(), maxDistance / realSense.getDepthScale());
         
         buffer.addFrame(newFrame);  // add to the buffer
         
-<<<<<<< HEAD
         return true;
-=======
-        // update current view
-        currentImage.loadData(newFrame->irPixels);
-        currentDepthImage.loadData(newFrame->depthPixels);
-    }
-    
-    ofTexture resultTexture;
-    ofTexture resultDepthTexture;
-    ofTexture newLayerTexture;
-    ofTexture newLayerDepthTexture;
-    
-    resultTexture = currentImage;
-    resultDepthTexture = currentDepthImage;
-    
-    // past pictures
-    for (float g : ghostTimestamps) {
-        rgbdFrame * pastFrame = buffer.getFrame(g);
-        newLayerTexture.loadData(pastFrame->irPixels);
-        newLayerDepthTexture.loadData(pastFrame->depthPixels);
-        
-        resultFbo.begin();
-        maskShader.begin();
-        maskShader.setUniformTexture("tex1", resultTexture, 2);
-        maskShader.setUniformTexture("tex1Depth", resultDepthTexture, 3);
-        maskShader.setUniformTexture("tex0Depth", newLayerDepthTexture, 1);
-        newLayerTexture.draw(0, 0);
-        maskShader.end();
-        resultFbo.end();
-        
-        resultDepthFbo.begin();
-        maxShader.begin();
-        maskShader.setUniformTexture("tex1", resultDepthTexture, 1);
-        newLayerTexture.draw(0, 0);
-        maxShader.end();
-        resultDepthFbo.end();
-        
-        resultTexture = resultFbo.getTexture();
-        resultDepthTexture = resultDepthFbo.getTexture();
-        
-        break;
->>>>>>> parent of 6a71f49... working!
     }
     else
         return false;
@@ -141,18 +93,19 @@ void ofApp::mergeImages() {
     ofTexture newLayerTexture;
     ofTexture newLayerDepthTexture;
     
-    rgbdFrame * newFrame = buffer.getFrame(timer);
-    
-    newLayerTexture.loadData(newFrame->colorPixels);
+    rgbdFrame * newFrame = buffer.getLastFrame();
+    newLayerTexture.loadData(newFrame->videoPixels);
     newLayerDepthTexture.loadData(newFrame->depthPixels);
     
     // init fbo's with current pictures
     resultFbo.begin();
+    ofDrawRectangle(0, 0, 300, 300);
     newLayerTexture.draw(0, 0);
     resultFbo.end();
     resultDepthFbo.begin();
     newLayerDepthTexture.draw(0, 0);
     resultDepthFbo.end();
+    return;
     
     // past pictures
     for (float g : ghostTimestamps) {
@@ -166,7 +119,7 @@ void ofApp::mergeImages() {
         
         // get past pictures
         rgbdFrame * pastFrame = buffer.getFrame(g);
-        newLayerTexture.loadData(pastFrame->colorPixels);
+        newLayerTexture.loadData(pastFrame->videoPixels);
         newLayerDepthTexture.loadData(pastFrame->depthPixels);
         
         // update result
@@ -191,14 +144,13 @@ void ofApp::mergeImages() {
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    if (!cameraFound) return;
+    if (!realSense.isConnected()) return;
     
     realSense.update();
     
     float newTimer = ofGetElapsedTimef();
     timeDelta = newTimer - timer;
     timer = newTimer;
-    
     updateGhosts();
     if (getNewFrames())
         mergeImages();
@@ -208,23 +160,24 @@ void ofApp::update(){
 void ofApp::draw(){
     ofClear(0);
     
-    if (!cameraFound) {
+    if (!realSense.isConnected()) {
         ofSetColor(255);
         ofDrawBitmapString("Camera not found", 10, 20);
         return;
     }
     
-    // latest frame
-<<<<<<< HEAD
-    float dx = ofGetWindowWidth() / 2 + resultShift->x - cameraWidth * resultScale / 2;
-    float dy = ofGetWindowHeight() / 2 + resultShift->y - cameraHeight * resultScale / 2;
-    float scaledWidth = cameraWidth * resultScale;
-    float scaledHeight = cameraHeight * resultScale;
-=======
-    resultFbo.draw(0, 0);
->>>>>>> parent of 6a71f49... working!
+    // draw result
+    ofPushMatrix();
     
-    resultFbo.draw(dx, dy, scaledWidth, scaledHeight);
+    
+    ofTranslate(ofGetWindowWidth() / 2 + resultShift->x, ofGetWindowHeight() / 2 + resultShift->y);
+    ofScale(resultScale);
+    ofTranslate(-cameraWidth / 2, -cameraHeight / 2);
+    
+    resultFbo.draw(0, 0, cameraWidth, cameraHeight);
+    ofDrawRectangle(0, 0, cameraWidth, cameraHeight);
+    
+    ofPopMatrix();
     
     if (showGui) gui.draw();
 }
@@ -235,7 +188,7 @@ void ofApp::keyPressed(int key){
 }
 
 void ofApp::exit(){
-    if (cameraFound) {
+    if (realSense.isConnected()) {
         realSense.stop();
     }
     gui.saveToFile("settings.xml");

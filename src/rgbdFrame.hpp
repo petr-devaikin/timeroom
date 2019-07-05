@@ -19,8 +19,8 @@ public:
     rgbdFrame(int width, int height);
     rgbdFrame(float timestamp, ofPixels& videoPixels, ofShortPixels& depthPixels, float minDepthValue, float maxDepthValue);
     
-    ofShortPixels depthPixels;
-    ofPixels colorPixels;
+    ofPixels depthPixels;
+    ofPixels videoPixels;
     
     double timestamp;
 };

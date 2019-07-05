@@ -26,6 +26,7 @@ public:
     
     void addFrame(rgbdFrame * frame);
     rgbdFrame * getFrame(float timestamp);
+    rgbdFrame * getLastFrame();
 };
 
 #endif /* videoBuffer_hpp */
