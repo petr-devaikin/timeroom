@@ -11,12 +11,10 @@
 #include "cameraFilter.hpp"
 #include "videoBuffer.hpp"
 #include <ofxRealSense2.hpp>
+#include "ofxGui.h"
 
 class ghostMaker : public cameraFilter {
 private:
-    float maxGhostLifeTime;
-    float ghostGenerationInterval;
-    
     videoBuffer * buffer;
     
     list<float> ghostTimestamps;
@@ -24,6 +22,8 @@ private:
     
     ofShader maskShader;
     ofShader maxShader;
+    
+    float timer;
     
     ofFbo resultFbo;
     ofFbo resultDepthFbo;
@@ -36,14 +36,21 @@ private:
     void updateGhosts();
     
     void mergeImages();
+    
+    // GUI
+    void initGui();
+    ofxPanel gui;
+    ofxFloatSlider maxGhostLifetime;
+    ofxFloatSlider ghostGenerationInterval;
 public:
-    ghostMaker(ofxRealSense2 realSense, float maxGhostLifetime, float ghostGenerationInterval) : cameraFilter(realSense) { };
+    ghostMaker(ofxRealSense2 * realSense);
     ~ghostMaker();
     
     // constructor: buffer(1280, 720, 30)
     
-    void update() override;
+    void update(rgbdFrame * newFrame) override;
     void draw() override;
+    void drawGui(float x, float y) override;
     
     void setMaxGhostLifetime(float lifetime);
     void setGhostGenerationInterfal(float interval);

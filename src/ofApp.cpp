@@ -3,27 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     initCamera();
-    
-    resultFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    resultDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    
-    tempFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    tempDepthFbo.allocate(cameraWidth, cameraHeight, GL_RGB);
-    
-    maskShader.load("shadersGL3/mask");
-    maxShader.load("shadersGL3/max");
-    
-    timer = 0;
-    
     initGui();
+    
+    filter = new ghostMaker(&realSense);
 }
 
 void ofApp::initGui() {
     showGui = true;
     
     gui.setup();
-    gui.add(maxGhostLifeTime.setup("ghost lifetime", 4, 0.1, 20));
-    gui.add(ghostGenerationInterval.setup("ghost interval", 1, 0.1, 2));
     
     gui.add(minDistance.setup("min distance", 1, 0, 10));
     gui.add(maxDistance.setup("max distance", 8, 0, 10));
@@ -39,7 +27,6 @@ bool ofApp::initCamera() {
     if (realSense.setup()) {
         ofLogNotice("RealSense found");
         realSense.start();
-        
         return true;
     }
     else {
@@ -52,6 +39,7 @@ bool ofApp::getNewFrames() {
     
     if (realSense.hasNewFrames()) {
         rgbdFrame * newFrame = new rgbdFrame(currentTime, realSense.getColorPixels(), realSense.getDepthPixels(), minDistance / realSense.getDepthScale(), maxDistance / realSense.getDepthScale());
+        
         
         buffer.addFrame(newFrame);  // add to the buffer
         
