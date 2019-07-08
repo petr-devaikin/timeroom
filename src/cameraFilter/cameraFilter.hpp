@@ -10,15 +10,18 @@
 
 #include <ofxRealSense2.hpp>
 #include "rgbdFrame.hpp"
+#include "ofxGui.h"
+#include "ofMain.h"
 
 class cameraFilter {
 protected:
     ofxRealSense2 * realSense;
+    ofxPanel gui;
 public:
     cameraFilter(ofxRealSense2 * realSense);
-    virtual void update(rgbdFrame * newFrame) = 0;
+    virtual void update() = 0;
     virtual void draw() = 0;
-    virtual void drawGui(float x, float y) = 0;
+    void drawGui(float x, float y);
 };
 
 #endif /* cameraFilter_hpp */

@@ -10,7 +10,6 @@
 
 class ofApp : public ofBaseApp{
 private:
-    
     bool getNewFrames(); // get new frames from camera if available;
     
     // Camera stuff
@@ -27,8 +26,6 @@ private:
     void initGui();
     ofxPanel gui;
     
-    ofxFloatSlider minDistance;
-    ofxFloatSlider maxDistance;
     ofxFloatSlider resultScale;
     ofxVec2Slider resultShift;
 public:

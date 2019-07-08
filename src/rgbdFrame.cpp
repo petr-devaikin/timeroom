@@ -8,6 +8,8 @@
 #include "rgbdFrame.hpp"
 
 rgbdFrame::rgbdFrame(int width, int height) {
+    timestamp = ofGetElapsedTimef();
+    
     this->width = width;
     this->height = height;
     
@@ -19,8 +21,8 @@ rgbdFrame::rgbdFrame(int width, int height) {
 }
 
 
-rgbdFrame::rgbdFrame(float timestamp, ofPixels &videoPixels, ofShortPixels& depthPixels, float minDepthValue, float maxDepthValue) {
-    this->timestamp = timestamp;
+rgbdFrame::rgbdFrame(ofPixels &videoPixels, ofShortPixels& depthPixels, float minDepthValue, float maxDepthValue) {
+    timestamp = ofGetElapsedTimef();
     width = videoPixels.getWidth();
     height = videoPixels.getHeight();
     

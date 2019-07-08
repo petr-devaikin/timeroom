@@ -24,6 +24,7 @@ private:
     ofShader maxShader;
     
     float timer;
+    float timeDelta;
     
     ofFbo resultFbo;
     ofFbo resultDepthFbo;
@@ -31,26 +32,26 @@ private:
     ofFbo tempFbo;
     ofFbo tempDepthFbo;
     
+    void updateGhosts();
     void removeOldGhosts();
     void addNewGhost();
-    void updateGhosts();
     
     void mergeImages();
     
     // GUI
     void initGui();
-    ofxPanel gui;
     ofxFloatSlider maxGhostLifetime;
     ofxFloatSlider ghostGenerationInterval;
+    ofxFloatSlider minDistance;
+    ofxFloatSlider maxDistance;
 public:
     ghostMaker(ofxRealSense2 * realSense);
     ~ghostMaker();
     
     // constructor: buffer(1280, 720, 30)
     
-    void update(rgbdFrame * newFrame) override;
+    void update() override;
     void draw() override;
-    void drawGui(float x, float y) override;
     
     void setMaxGhostLifetime(float lifetime);
     void setGhostGenerationInterfal(float interval);
