@@ -38,7 +38,8 @@ ghostMaker::~ghostMaker() {
 }
 
 void ghostMaker::initGui() {
-    gui.setup();
+    cameraFilter::initGui();
+    
     gui.add(minDistance.setup("min distance", 1, 0, 10));
     gui.add(maxDistance.setup("max distance", 8, 0, 10));
     gui.add(maxGhostLifetime.setup("ghost lifetime", 4, 0.1, 20));

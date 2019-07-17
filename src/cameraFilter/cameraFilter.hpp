@@ -9,7 +9,6 @@
 #define cameraFilter_hpp
 
 #include <ofxRealSense2.hpp>
-#include "rgbdFrame.hpp"
 #include "ofxGui.h"
 #include "ofMain.h"
 
@@ -17,6 +16,8 @@ class cameraFilter {
 protected:
     ofxRealSense2 * realSense;
     ofxPanel gui;
+    
+    virtual void initGui();
 public:
     cameraFilter(ofxRealSense2 * realSense);
     virtual void update() = 0;

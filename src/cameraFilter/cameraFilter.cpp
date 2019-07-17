@@ -17,3 +17,7 @@ void cameraFilter::drawGui(float x, float y) {
     gui.draw();
     ofPopMatrix();
 }
+
+void cameraFilter::initGui() {
+    gui.setup();
+}

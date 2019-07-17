@@ -12,6 +12,7 @@
 #include "videoBuffer.hpp"
 #include <ofxRealSense2.hpp>
 #include "ofxGui.h"
+#include "rgbdFrame.hpp"
 
 class ghostMaker : public cameraFilter {
 private:
@@ -39,11 +40,12 @@ private:
     void mergeImages();
     
     // GUI
-    void initGui();
     ofxFloatSlider maxGhostLifetime;
     ofxFloatSlider ghostGenerationInterval;
     ofxFloatSlider minDistance;
     ofxFloatSlider maxDistance;
+protected:
+    void initGui() override;
 public:
     ghostMaker(ofxRealSense2 * realSense);
     ~ghostMaker();
