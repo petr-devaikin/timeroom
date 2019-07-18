@@ -39,13 +39,10 @@ cubinator::~cubinator() {
 void cubinator::setupScene() {
     camera.enableOrtho();
     
-    light.setDirectional();
-    light.setPosition(0, 0, 100);
-    light.setAmbientColor(ofColor(20, 20, 20));
-    light.setDiffuseColor(ofColor(255, 255, 255));
-    light.setSpecularColor(ofColor(255, 255, 255));
-    //light.rotateDeg(180, glm::vec3(0, 1, 0));
-    light.lookAt(glm::vec3(0, 0, 0));
+    directionalLight.setDirectional();
+    directionalLight.setDiffuseColor(ofColor(255, 255, 255));
+    directionalLight.rotateDeg(160, glm::vec3(0, 1, 0));
+    directionalLight.rotateDeg(-15, glm::vec3(1, 0, 0));
 }
 
 void cubinator::updateScene() {
@@ -87,7 +84,6 @@ void cubinator::update() {
     
     ofSetSmoothLighting(true);
     ofEnableLighting();
-    ofSetGlobalAmbientColor(ofColor(255, 255, 0));
     
     ofClear(0);
     ofSetColor(20, 30, 40);
@@ -95,7 +91,7 @@ void cubinator::update() {
     ofSetColor(255);
     
     camera.begin();
-    light.enable();
+    directionalLight.enable();
 
     for (int x = 0; x < columnNumber; x++) {
         for (int y = 0; y < rowNumber; y++) {
@@ -105,7 +101,7 @@ void cubinator::update() {
         }
     }
     
-    light.disable();
+    directionalLight.disable();
     camera.end();
     
     ofDisableDepthTest();

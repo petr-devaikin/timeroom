@@ -6,11 +6,11 @@
 	<camera_rotation>-45, -45</camera_rotation>
 	<cube_per_meter>22.5</cube_per_meter>
 	<pix_area_size>10</pix_area_size>
-	<cube_size>28</cube_size>
+	<cube_size>15</cube_size>
 	<column_number>9</column_number>
 	<row_number>6</row_number>
 	<camera_margin_hor>187</camera_margin_hor>
-	<camera_margin_vert>20</camera_margin_vert>
-	<pixel_size>40</pixel_size>
-	<cube_per_depth_meter>8</cube_per_depth_meter>
+	<camera_margin_vert>40</camera_margin_vert>
+	<pixel_size>20</pixel_size>
+	<cube_per_depth_meter>16.5</cube_per_depth_meter>
 </group>

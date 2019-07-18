@@ -34,7 +34,7 @@ private:
     void setupScene();
     void updateScene();
     ofCamera camera;
-    ofLight light;
+    ofLight directionalLight;
     ofFbo result;
     
     // GUI
