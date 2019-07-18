@@ -60,6 +60,14 @@ void ofApp::draw(){
     ofScale(resultScale);
     ofTranslate(-cameraWidth / 2, -cameraHeight / 2);
     
+    if (showGui) {
+        ofSetColor(255, 0, 0);
+        ofNoFill();
+        ofDrawRectangle(0, 0, cameraWidth, cameraHeight);
+        ofFill();
+    }
+    
+    ofSetColor(255, 255, 255);
     filter->draw();
     
     ofPopMatrix();

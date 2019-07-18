@@ -86,8 +86,8 @@ void cubinator::update() {
     ofEnableLighting();
     
     ofClear(0);
-    ofSetColor(20, 30, 40);
-    ofDrawRectangle(0, 0, realSense->getWidth(), realSense->getHeight());
+    //ofSetColor(20, 30, 40);
+    //ofDrawRectangle(0, 0, realSense->getWidth(), realSense->getHeight());
     ofSetColor(255);
     
     camera.begin();
