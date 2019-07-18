@@ -40,12 +40,11 @@ private:
     void mergeImages();
     
     // GUI
+    void initGui();
     ofxFloatSlider maxGhostLifetime;
     ofxFloatSlider ghostGenerationInterval;
     ofxFloatSlider minDistance;
     ofxFloatSlider maxDistance;
-protected:
-    void initGui() override;
 public:
     ghostMaker(ofxRealSense2 * realSense);
     ~ghostMaker();

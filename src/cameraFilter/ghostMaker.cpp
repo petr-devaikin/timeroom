@@ -8,9 +8,6 @@
 #include "ghostMaker.hpp"
 
 ghostMaker::ghostMaker(ofxRealSense2 * realSense) : cameraFilter(realSense) {
-    // GUI
-    initGui();
-    
     // init buffer
     float cameraWidth = realSense->getWidth();
     float cameraHeight = realSense->getHeight();
@@ -30,6 +27,9 @@ ghostMaker::ghostMaker(ofxRealSense2 * realSense) : cameraFilter(realSense) {
     
     // init timer
     timer = ofGetElapsedTimef();
+    
+    // GUI
+    initGui();
 }
 
 ghostMaker::~ghostMaker() {
@@ -38,8 +38,6 @@ ghostMaker::~ghostMaker() {
 }
 
 void ghostMaker::initGui() {
-    cameraFilter::initGui();
-    
     gui.add(minDistance.setup("min distance", 1, 0, 10));
     gui.add(maxDistance.setup("max distance", 8, 0, 10));
     gui.add(maxGhostLifetime.setup("ghost lifetime", 4, 0.1, 20));

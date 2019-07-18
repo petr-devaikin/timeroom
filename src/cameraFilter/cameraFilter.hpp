@@ -16,10 +16,10 @@ class cameraFilter {
 protected:
     ofxRealSense2 * realSense;
     ofxPanel gui;
-    
-    virtual void initGui();
 public:
     cameraFilter(ofxRealSense2 * realSense);
+    virtual ~cameraFilter();
+    
     virtual void update() = 0;
     virtual void draw() = 0;
     void drawGui(float x, float y);

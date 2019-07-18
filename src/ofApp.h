@@ -7,6 +7,7 @@
 #include "ofxGui.h"
 #include "cameraFilter/cameraFilter.hpp"
 #include "cameraFilter/ghostMaker.hpp"
+#include "cameraFilter/cubinator.hpp"
 
 class ofApp : public ofBaseApp{
 private:

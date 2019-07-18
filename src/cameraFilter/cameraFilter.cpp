@@ -9,15 +9,13 @@
 
 cameraFilter::cameraFilter(ofxRealSense2 * realSense) {
     this->realSense = realSense;
+    gui.setup();
+}
+
+cameraFilter::~cameraFilter() {
 }
 
 void cameraFilter::drawGui(float x, float y) {
-    ofPushMatrix();
-    ofTranslate(x, y);
+    gui.setPosition(x, y);
     gui.draw();
-    ofPopMatrix();
-}
-
-void cameraFilter::initGui() {
-    gui.setup();
 }

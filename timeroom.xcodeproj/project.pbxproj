@@ -203,7 +203,7 @@
 		5CBF6AED6A17AC0C17F63CC4 /* RunningBackground.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = RunningBackground.cpp; path = ../../../addons/ofxCv/libs/ofxCv/src/RunningBackground.cpp; sourceTree = SOURCE_ROOT; };
 		5D0971E2750DFC83749AFF16 /* tracking_c.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = tracking_c.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/video/tracking_c.h; sourceTree = SOURCE_ROOT; };
 		5D6065BE36CF19894D213EB4 /* vec_traits.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = vec_traits.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudev/util/vec_traits.hpp; sourceTree = SOURCE_ROOT; };
-		5DA4FABB5DF9F2683FC8DE5A /* cameraFilter.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cameraFilter.hpp; path = src/cameraFilter/cameraFilter.hpp; sourceTree = SOURCE_ROOT; };
+		5DA4FABB5DF9F2683FC8DE5A /* cameraFilter.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.h; fileEncoding = 4; name = cameraFilter.hpp; path = src/cameraFilter/cameraFilter.hpp; sourceTree = SOURCE_ROOT; };
 		5E1F9C373CC3AEB048D9B1F1 /* NCVPyramid.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = NCVPyramid.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudalegacy/NCVPyramid.hpp; sourceTree = SOURCE_ROOT; };
 		5E9B116A022FFBC4B765B49C /* shape.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = shape.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/shape.hpp; sourceTree = SOURCE_ROOT; };
 		5FBB4A8427353AED09174BE5 /* ContourFinder.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = ContourFinder.cpp; path = ../../../addons/ofxCv/libs/ofxCv/src/ContourFinder.cpp; sourceTree = SOURCE_ROOT; };
@@ -229,8 +229,8 @@
 		6DD5A3CBB6D5BBA1C1354F1B /* flann.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = flann.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/flann/flann.hpp; sourceTree = SOURCE_ROOT; };
 		6E20DD7238FD1446DA7DB1D5 /* histogram.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = histogram.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudev/grid/histogram.hpp; sourceTree = SOURCE_ROOT; };
 		6EF5548EEA5A855DAA35C873 /* cudafilters.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudafilters.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudafilters.hpp; sourceTree = SOURCE_ROOT; };
-		6F17BE7122DF3ACF00F6CA87 /* cubinator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cubinator.cpp; sourceTree = "<group>"; };
-		6F17BE7222DF3ACF00F6CA87 /* cubinator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = cubinator.hpp; sourceTree = "<group>"; };
+		6F17BE7122DF3ACF00F6CA87 /* cubinator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cubinator.cpp; path = src/cameraFilter/cubinator.cpp; sourceTree = SOURCE_ROOT; };
+		6F17BE7222DF3ACF00F6CA87 /* cubinator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = cubinator.hpp; path = src/cameraFilter/cubinator.hpp; sourceTree = SOURCE_ROOT; };
 		70046E043EDDB466ED625C3B /* Tracker.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = Tracker.h; path = ../../../addons/ofxCv/libs/ofxCv/include/ofxCv/Tracker.h; sourceTree = SOURCE_ROOT; };
 		7027C12438FC53D4C51FA06F /* cudawarping.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = cudawarping.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/cudawarping.hpp; sourceTree = SOURCE_ROOT; };
 		704DCFE42516C774B24026C6 /* utility.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 4; name = utility.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/core/cuda/utility.hpp; sourceTree = SOURCE_ROOT; };
@@ -1557,8 +1557,8 @@
 				7F7F06AC847CD090A01B0DE5 /* ghostMaker.cpp */,
 				5DA4FABB5DF9F2683FC8DE5A /* cameraFilter.hpp */,
 				02B0A8CA0A903A79FDA6F5A2 /* cameraFilter.cpp */,
-				6F17BE7122DF3ACF00F6CA87 /* cubinator.cpp */,
 				6F17BE7222DF3ACF00F6CA87 /* cubinator.hpp */,
+				6F17BE7122DF3ACF00F6CA87 /* cubinator.cpp */,
 			);
 			name = cameraFilter;
 			sourceTree = "<group>";

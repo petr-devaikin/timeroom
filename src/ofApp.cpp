@@ -2,10 +2,13 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    ofSetVerticalSync(true);
+    
     initCamera();
     initGui();
     
-    filter = new ghostMaker(&realSense);
+    //filter = new ghostMaker(&realSense);
+    filter = new cubinator(&realSense);
 }
 
 void ofApp::initGui() {
@@ -63,7 +66,7 @@ void ofApp::draw(){
     
     if (showGui) {
         gui.draw();
-        filter->drawGui(200, 0);
+        filter->drawGui(250, 0);
     }
 }
 
@@ -77,4 +80,5 @@ void ofApp::exit(){
         realSense.stop();
     }
     gui.saveToFile("settings.xml");
+    delete filter;
 }
